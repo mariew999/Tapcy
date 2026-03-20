@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card" style="text-align: center;">
+    <div class="emoji">🚕</div>
+    <h1>Tapcy Kiosk </h1>
+    <p style="color: #ff9bcb; font-size: 18px; margin: 15px 0;">Book a tricycle ride in seconds! </p>
+
+    <a href="{{ url_for('views.passenger_login') }}" class="btn" style="font-size: 18px; padding: 15px 40px; margin-top: 20px;">
+        Book a Ride🎀
+    </a>
+
+    <hr>
+
+    <div style="text-align: left;">
+        <h3 style="color: #ff69b4;">🌸 How it works:</h3>
+        <ul style="margin-top: 15px; list-style: none; padding: 0;">
+            <li style="margin: 12px 0; padding: 10px; background: #fff5f8; border-radius: 20px; color: #666;">
+                📱 Enter your phone number to login
+            </li>
+            <li style="margin: 12px 0; padding: 10px; background: #fff5f8; border-radius: 20px; color: #666;">
+                📍 Enter your pickup and dropoff locations
+            </li>
+            <li style="margin: 12px 0; padding: 10px; background: #fff5f8; border-radius: 20px; color: #666;">
+                🚗 A nearby driver will accept your booking
+            </li>
+            <li style="margin: 12px 0; padding: 10px; background: #fff5f8; border-radius: 20px; color: #666;">
+                💰 Pay when you arrive at your destination
+            </li>
+        </ul>
+    </div>
+
+{% endblock %}

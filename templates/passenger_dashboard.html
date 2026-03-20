@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <div class="emoji">🌸</div>
+            <h2>Welcome back, {{ passenger.name }}! 💕</h2>
+            <p style="color: #ff9bcb;">✨ You are logged in as a passenger ✨</p>
+        </div>
+        <div>
+            <a href="{{ url_for('views.book_ride') }}" class="btn">✨ Book New Ride 🚕</a>
+            <a href="{{ url_for('views.passenger_logout') }}" class="btn" style="background: #ffb6c1;">🌸 Logout</a>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+        <div style="background: linear-gradient(135deg, #ff69b4, #ff9bcb); padding: 15px; border-radius: 15px; text-align: center; color: white;">
+            <div style="font-size: 30px;">👥</div>
+            <div><strong>{{ active_riders_count }}</strong> Passengers Online</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #4caf50, #81c784); padding: 15px; border-radius: 15px; text-align: center; color: white;">
+            <div style="font-size: 30px;">🚗</div>
+            <div><strong>{{ available_drivers_count }}</strong> Drivers Available</div>
+        </div>
+    </div>
+
+    {% if active_riders %}
+    <div style="background: #fff5f8; padding: 15px; border-radius: 15px; margin: 15px 0;">
+        <h4 style="color: #ff69b4;">👥 Active Passengers (Auto-Logged In)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+            {% for rider in active_riders %}
+            <span style="background: white; padding: 5px 15px; border-radius: 20px; color: #ff69b4;">
+                🌸 {{ rider.name }}
+                <small style="color: #999;">(since {{ rider.login_time }})</small>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <h3>📋 My Bookings </h3>
+    {% if bookings %}
+    <div style="overflow-x: auto;">
+         <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: purple; color: white;">
+                    <th style="padding: 10px;">ID</th>
+                    <th style="padding: 10px;">Pickup</th>
+                    <th style="padding: 10px;">Dropoff</th>
+                    <th style="padding: 10px;">👥</th>
+                    <th style="padding: 10px;">💰 Fare</th>
+                    <th style="padding: 10px;">Status</th>
+                    <th style="padding: 10px;">Driver</th>
+                    <th style="padding: 10px;"></th>
+                  </tr>
+            </thead>
+            <tbody>
+                {% for b in bookings %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">#{{ b.id }}</td>
+                    <td style="padding: 10px;">{{ b.pickup[:25] }}...</td>
+                    <td style="padding: 10px;">{{ b.dropoff[:25] }}...</td>
+                    <td style="padding: 10px;">{{ b.passengers }}</td>
+                    <td style="padding: 10px; color: #ff69b4; font-weight: bold;">₱{{ b.fare }}</td>
+                    <td style="padding: 10px;">
+                        <span class="status-{{ b.status }}">{{ b.status|upper }}</span>
+                    </td>
+                    <td style="padding: 10px;">{{ b.driver or '🌸 Waiting...' }}</td>
+                    <td style="padding: 10px;">
+                        {% if b.status == 'pending' %}
+                        <a href="{{ url_for('views.cancel_booking', booking_id=b.id) }}" style="color: #ffb6c1;" onclick="return confirm('Cancel this booking? 💔')">Cancel</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="text-align: center; color: #ff9bcb; padding: 40px;">✨ No bookings yet. Click "Book New Ride" to start your adventure! 🚕🌸</p>
+    {% endif %}
+</div>
+{% endblock %}

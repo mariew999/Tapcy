@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Admin Dashboard</h2>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ bookings|length }}</div>
+            <div>Total Bookings</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ passengers|length }}</div>
+            <div>Total Passengers</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ drivers|length }}</div>
+            <div>Total Drivers</div>
+        </div>
+    </div>
+
+    <h3>All Bookings</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Passenger</th>
+                <th>Pickup</th>
+                <th>Dropoff</th>
+                <th>Passengers</th>
+                <th>Status</th>
+                <th>Driver</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in bookings %}
+            <tr>
+                <td>#{{ b.id }}</td>
+                <td>{{ b.passenger_name }}</td>
+                <td>{{ b.pickup[:30] }}</td>
+                <td>{{ b.dropoff[:30] }}</td>
+                <td>{{ b.passengers }}</td>
+                <td><span class="status-{{ b.status }}">{{ b.status|upper }}</span></td>
+                <td>{{ b.driver or '-' }}</td>
+                <td>{{ b.time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Registered Passengers</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Phone</th>
+                <th>Name</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for phone, p in passengers.items() %}
+            <tr>
+                <td>{{ phone }}</td>
+                <td>{{ p.name }}</td>
+                <td>{{ p.email }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Registered Drivers</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Tricycle</th>
+                <th>Earnings</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for email, d in drivers.items() %}
+            <tr>
+                <td>{{ email }}</td>
+                <td>{{ d.name }}</td>
+                <td>{{ d.tricycle }}</td>
+                <td>₱{{ d.earnings|default(0) }}</td>
+                <td>{{ d.status|upper }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

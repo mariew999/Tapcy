@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Booking</title>
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding-top: 100px;
+        }
+        .container {
+            background: white;
+            width: 500px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 10px;
+        }
+        input, select {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 30px;
+            background-color: purple;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .logout {
+            background-color: red;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Book a Ride</h2>
+    <p>Welcome, {{ user.name }}!</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="message {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+        <input type="text" name="pickup" placeholder="Pick-up Location" required><br>
+        <input type="text" name="dropoff" placeholder="Drop-off Location" required><br>
+        <select name="passengers">
+            <option value="1">1 Passenger</option>
+            <option value="2">2 Passengers</option>
+            <option value="3">3 Passengers</option>
+            <option value="4">4 Passengers</option>
+        </select><br>
+        <button type="submit">Book Now</button>
+    </form>
+
+    <a href="{{ url_for('views.logout') }}"><button class="logout">Logout</button></a>
+</div>
+</body>
+</html>
