@@ -1,0 +1,318 @@
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from datetime import datetime
+import re
+
+views = Blueprint('views', __name__)
+
+# Databases
+passengers_db = {}
+drivers_db = {}
+bookings_db = []
+admin_db = {'admin': {'password': 'admin123'}}
+
+# ============= HOME =============
+@views.route("/")
+def home():
+    return redirect(url_for('views.kiosk'))
+
+@views.route("/kiosk")
+def kiosk():
+    return render_template("kiosk.html", active_tab='kiosk')
+
+# ============= PASSENGER SECTION =============
+@views.route("/passenger_login", methods=["GET", "POST"])
+def passenger_login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        # Find passenger by email
+        found = False
+        for phone, passenger in passengers_db.items():
+            if passenger.get('email') == email and passenger.get('password') == password:
+                session['passenger'] = {
+                    'phone': phone,
+                    'name': passenger['name'],
+                    'email': email
+                }
+                flash(f"Welcome back {passenger['name']}!", "success")
+                found = True
+                return redirect(url_for('views.passenger_dashboard'))
+
+        if not found:
+            flash("Invalid email or password", "error")
+
+    return render_template("passenger_login.html", active_tab='kiosk')
+
+@views.route("/passenger_register", methods=["POST"])
+def passenger_register():
+    name = request.form.get("name")
+    phone = request.form.get("phone")
+    email = request.form.get("email")
+    password = request.form.get("password")
+    confirm_password = request.form.get("confirm_password")
+
+    # Check if all fields are filled
+    if not name or not phone or not email or not password or not confirm_password:
+        flash("All fields are required", "error")
+        return redirect(url_for('views.passenger_login'))
+
+    # Phone number validation (exactly 11 digits)
+    if not re.match(r'^\d{11}$', phone):
+        flash("Phone number must be exactly 11 digits (numbers only)", "error")
+        return redirect(url_for('views.passenger_login'))
+
+    # Email validation (must contain @)
+    if '@' not in email:
+        flash("Email must contain @ symbol", "error")
+        return redirect(url_for('views.passenger_login'))
+
+    # Password length validation (min 8 characters)
+    if len(password) < 8:
+        flash("Password must be at least 8 characters long", "error")
+        return redirect(url_for('views.passenger_login'))
+
+    # Password match validation
+    if password != confirm_password:
+        flash("Passwords do not match! Please re-enter.", "error")
+        return redirect(url_for('views.passenger_login'))
+
+    # Check if phone already exists
+    if phone in passengers_db:
+        flash("Phone number already registered. Please login.", "error")
+        return redirect(url_for('views.passenger_login'))
+
+    # Check if email already exists
+    for p in passengers_db.values():
+        if p.get('email') == email:
+            flash("Email already registered. Please use another email.", "error")
+            return redirect(url_for('views.passenger_login'))
+
+    # Register new passenger
+    passengers_db[phone] = {
+        'name': name,
+        'phone': phone,
+        'email': email,
+        'password': password
+    }
+
+    flash("Registration successful! Please login with your email and password.", "success")
+    return redirect(url_for('views.passenger_login'))
+
+@views.route("/passenger_dashboard")
+def passenger_dashboard():
+    if 'passenger' not in session:
+        flash("Please login first", "error")
+        return redirect(url_for('views.passenger_login'))
+
+    my_bookings = []
+    for b in bookings_db:
+        if b.get('passenger_phone') == session['passenger']['phone']:
+            my_bookings.append(b)
+
+    return render_template("passenger_dashboard.html",
+                         active_tab='kiosk',
+                         passenger=session['passenger'],
+                         bookings=my_bookings)
+
+@views.route("/book_ride", methods=["GET", "POST"])
+def book_ride():
+    if 'passenger' not in session:
+        flash("Please login first", "error")
+        return redirect(url_for('views.passenger_login'))
+
+    if request.method == "POST":
+        pickup = request.form.get("pickup")
+        dropoff = request.form.get("dropoff")
+        passengers_count = request.form.get("passengers")
+
+        booking = {
+            'id': len(bookings_db) + 1,
+            'passenger_name': session['passenger']['name'],
+            'passenger_phone': session['passenger']['phone'],
+            'pickup': pickup,
+            'dropoff': dropoff,
+            'passengers': passengers_count,
+            'status': 'pending',
+            'driver': None,
+            'time': datetime.now().strftime("%H:%M")
+        }
+        bookings_db.append(booking)
+        flash(f"Booking #{booking['id']} created! Waiting for driver.", "success")
+        return redirect(url_for('views.passenger_dashboard'))
+
+    return render_template("book_ride.html",
+                         active_tab='kiosk',
+                         passenger=session['passenger'])
+
+@views.route("/cancel_booking/<int:booking_id>")
+def cancel_booking(booking_id):
+    if 'passenger' not in session:
+        return redirect(url_for('views.passenger_login'))
+
+    for b in bookings_db:
+        if b['id'] == booking_id:
+            b['status'] = 'cancelled'
+            flash("Booking cancelled", "info")
+            break
+
+    return redirect(url_for('views.passenger_dashboard'))
+
+@views.route("/passenger_logout")
+def passenger_logout():
+    session.pop('passenger', None)
+    flash("Logged out", "success")
+    return redirect(url_for('views.kiosk'))
+
+# ============= DRIVER SECTION =============
+@views.route("/driver_portal")
+def driver_portal():
+    return render_template("driver_portal.html", active_tab='driver')
+
+@views.route("/driver_login", methods=["GET", "POST"])
+def driver_login():
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        if email in drivers_db and drivers_db[email]['password'] == password:
+            session['driver'] = {'email': email, 'name': drivers_db[email]['name']}
+            flash(f"Welcome {drivers_db[email]['name']}!", "success")
+            return redirect(url_for('views.driver_dashboard'))
+        else:
+            flash("Invalid credentials", "error")
+
+    return render_template("driver_login.html", active_tab='driver')
+
+@views.route("/driver_register", methods=["GET", "POST"])
+def driver_register():
+    if request.method == "POST":
+        name = request.form.get("name")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        confirm = request.form.get("confirm")
+        tricycle = request.form.get("tricycle")
+
+        if not name or not email or not password or not confirm or not tricycle:
+            flash("All fields are required", "error")
+        elif email in drivers_db:
+            flash("Email already registered", "error")
+        elif len(password) < 8:
+            flash("Password must be at least 8 characters", "error")
+        elif password != confirm:
+            flash("Passwords do not match", "error")
+        else:
+            drivers_db[email] = {
+                'name': name,
+                'email': email,
+                'password': password,
+                'tricycle': tricycle,
+                'earnings': 0,
+                'status': 'offline'
+            }
+            flash("Registration successful! Please login.", "success")
+            return redirect(url_for('views.driver_login'))
+
+    return render_template("driver_register.html", active_tab='driver')
+
+@views.route("/driver_dashboard")
+def driver_dashboard():
+    if 'driver' not in session:
+        return redirect(url_for('views.driver_login'))
+
+    pending_bookings = [b for b in bookings_db if b['status'] == 'pending']
+    my_accepted = [b for b in bookings_db if b.get('driver') == session['driver']['name'] and b['status'] == 'accepted']
+    my_completed = [b for b in bookings_db if b.get('driver') == session['driver']['name'] and b['status'] == 'completed']
+
+    driver = drivers_db.get(session['driver']['email'], {})
+
+    return render_template("driver_dashboard.html",
+                         active_tab='driver',
+                         driver=session['driver'],
+                         driver_info=driver,
+                         pending_bookings=pending_bookings,
+                         my_accepted=my_accepted,
+                         my_completed=my_completed)
+
+@views.route("/accept_booking/<int:booking_id>")
+def accept_booking(booking_id):
+    if 'driver' not in session:
+        return redirect(url_for('views.driver_login'))
+
+    for b in bookings_db:
+        if b['id'] == booking_id and b['status'] == 'pending':
+            b['status'] = 'accepted'
+            b['driver'] = session['driver']['name']
+            flash(f"Booking #{booking_id} accepted! Pick up passenger.", "success")
+            break
+
+    return redirect(url_for('views.driver_dashboard'))
+
+@views.route("/complete_ride/<int:booking_id>")
+def complete_ride(booking_id):
+    if 'driver' not in session:
+        return redirect(url_for('views.driver_login'))
+
+    for b in bookings_db:
+        if b['id'] == booking_id and b.get('driver') == session['driver']['name']:
+            b['status'] = 'completed'
+            fare = 50
+            drivers_db[session['driver']['email']]['earnings'] += fare
+            flash(f"Ride completed! Earned ₱{fare}", "success")
+            break
+
+    return redirect(url_for('views.driver_dashboard'))
+
+@views.route("/toggle_driver_status")
+def toggle_driver_status():
+    if 'driver' not in session:
+        return redirect(url_for('views.driver_login'))
+
+    driver = drivers_db[session['driver']['email']]
+    if driver['status'] == 'available':
+        driver['status'] = 'offline'
+        flash("Status: OFFLINE", "info")
+    else:
+        driver['status'] = 'available'
+        flash("Status: ONLINE - You will receive bookings", "success")
+
+    return redirect(url_for('views.driver_dashboard'))
+
+@views.route("/driver_logout")
+def driver_logout():
+    session.pop('driver', None)
+    flash("Logged out", "success")
+    return redirect(url_for('views.kiosk'))
+
+# ============= ADMIN SECTION =============
+@views.route("/admin_login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if username in admin_db and admin_db[username]['password'] == password:
+            session['admin'] = username
+            flash("Welcome Admin!", "success")
+            return redirect(url_for('views.admin_dashboard'))
+        else:
+            flash("Invalid credentials", "error")
+
+    return render_template("admin_login.html", active_tab='admin')
+
+@views.route("/admin_dashboard")
+def admin_dashboard():
+    if 'admin' not in session:
+        return redirect(url_for('views.admin_login'))
+
+    return render_template("admin_dashboard.html",
+                         active_tab='admin',
+                         bookings=bookings_db,
+                         passengers=passengers_db,
+                         drivers=drivers_db)
+
+@views.route("/admin_logout")
+def admin_logout():
+    session.pop('admin', None)
+    flash("Logged out", "success")
+    return redirect(url_for('views.kiosk'))

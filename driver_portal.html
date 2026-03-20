@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card" style="text-align: center;">
+    <h1> Driver Portal🧑‍</h1>
+    <p style="color: #ff9bcb; font-size: 18px; margin: 15px 0;">Your Manong Driver </p>
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('views.driver_login') }}" class="btn">Login</a>
+        <a href="{{ url_for('views.driver_register') }}" class="btn">Register</a>
+    </div>
+</div>
+{% endblock %}

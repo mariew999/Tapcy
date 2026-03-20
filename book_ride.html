@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2>Book a Ride</h2>
+    <p>Hi <strong>{{ passenger.name }}</strong>! Where are you going?</p>
+
+    <form method="POST" action="{{ url_for('views.book_ride') }}" onsubmit="return calculateFare()">
+        <label>📍 Pick-up Location</label>
+        <input type="text" name="pickup" placeholder="Enter your current location" required>
+
+        <label>📍 Drop-off Location</label>
+        <input type="text" name="dropoff" placeholder="Enter your destination" required>
+
+        <label>👥 Number of Passengers</label>
+        <select name="passengers" id="passengers" onchange="updateFare()" required>
+            <option value="1">1 Passenger - ₱40</option>
+            <option value="2">2 Passengers - ₱80</option>
+            <option value="3">3 Passengers - ₱120</option>
+            <option value="4">4 Passengers - ₱160</option>
+        </select>
+
+        <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin: 15px 0;">
+            <strong>💰 Fare: ₱<span id="fare_amount">40</span></strong>
+            <small style="display: block; margin-top: 5px;">Base fare: ₱40 per passenger</small>
+        </div>
+
+        <button type="submit">Submit Booking</button>
+    </form>
+
+    <a href="{{ url_for('views.passenger_dashboard') }}" style="display: block; text-align: center; margin-top: 20px;">← Back to Dashboard</a>
+</div>
+
+<script>
+    function updateFare() {
+        var passengers = document.getElementById('passengers').value;
+        var fare = passengers * 40;
+        document.getElementById('fare_amount').innerText = fare;
+    }
+
+    function calculateFare() {
+        var passengers = document.getElementById('passengers').value;
+        var fare = passengers * 40;
+        // Add hidden field to submit fare
+        var hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'fare';
+        hiddenInput.value = fare;
+        document.forms[0].appendChild(hiddenInput);
+        return true;
+    }
+</script>
+{% endblock %}
