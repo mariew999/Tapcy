@@ -125,7 +125,7 @@ def passenger_login():
                 'login_time': get_local_time().strftime("%H:%M"),
                 'status': 'active'
             }
-            flash(f"🌸 Welcome back {passenger['name']}! You are now logged in.", "success")
+            flash(f"🌸 Welcome back {passenger['name']}!", "success")
             return redirect(url_for('views.passenger_dashboard'))
         else:
             flash("Invalid email or password", "error")
@@ -140,6 +140,7 @@ def passenger_register():
     password = request.form.get("password")
     confirm_password = request.form.get("confirm_password")
 
+    # Validation
     if not name or not phone or not email or not password or not confirm_password:
         flash("All fields are required", "error")
         return redirect(url_for('views.passenger_login'))
@@ -268,7 +269,7 @@ def cancel_booking(booking_id):
 def passenger_logout():
     if 'passenger' in session:
         active_riders.pop(session['passenger']['phone'], None)
-        flash(f"🌸 Goodbye {session['passenger']['name']}! You have been logged out.", "success")
+        flash(f"🌸 Goodbye {session['passenger']['name']}!", "success")
     session.pop('passenger', None)
     return redirect(url_for('views.passenger_login'))
 
@@ -293,7 +294,7 @@ def driver_login():
                 'login_time': get_local_time().strftime("%H:%M"),
                 'status': driver['status']
             }
-            flash(f"🚗 Welcome {driver['name']}! You are now online.", "success")
+            flash(f"🚗 Welcome {driver['name']}!", "success")
             return redirect(url_for('views.driver_dashboard'))
         else:
             flash("Invalid email or password", "error")
@@ -309,6 +310,7 @@ def driver_register():
     confirm = request.form.get("confirm")
     tricycle = request.form.get("tricycle")
 
+    # Validation
     if not name or not phone or not email or not password or not confirm or not tricycle:
         flash("All fields are required", "error")
         return redirect(url_for('views.driver_login'))
