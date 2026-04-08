@@ -14,24 +14,6 @@
             background-color: #f4f4f4;
         }
 
-        .tabs {
-            background: #2c1e3a;
-            padding: 15px;
-            text-align: center;
-        }
-
-        .tabs a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 30px;
-            margin: 0 10px;
-            border-radius: 5px;
-        }
-
-        .tabs a.active {
-            background: #ff9800;
-        }
-
         .container {
             max-width: 1200px;
             margin: 30px auto;
@@ -167,12 +149,6 @@
     </style>
 </head>
 <body>
-
-<div class="tabs">
-    <a href="{{ url_for('views.passenger_login') }}" {% if active_tab == 'passenger' %}class="active"{% endif %}>Passenger</a>
-    <a href="{{ url_for('views.driver_login') }}" {% if active_tab == 'driver' %}class="active"{% endif %}>Driver</a>
-    <a href="{{ url_for('views.admin_dashboard') }}" {% if active_tab == 'admin' %}class="active"{% endif %}>Admin</a>
-</div>
 
 <div class="container">
     {% with messages = get_flashed_messages(with_categories=true) %}
