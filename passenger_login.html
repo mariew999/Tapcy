@@ -17,6 +17,7 @@
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>
+        <p style="margin-top: 10px; font-size: 12px; color: #666;">Don't have an account? Click Register above</p>
     </div>
     
     <!-- Register Form -->
@@ -78,7 +79,6 @@
         return true;
     }
 
-    // Show Register tab by default when coming with ?tab=register
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab');
