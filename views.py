@@ -1,26 +1,23 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 import sqlite3
 import os
-import pytz
 
 views = Blueprint('views', __name__)
 
-# ============= TIMEZONE SETUP (Philippines) =============
-PH_TIMEZONE = pytz.timezone('Asia/Manila')
-
+# ============= TIMEZONE SETUP (Philippines UTC+8) =============
 def get_local_time():
-    """Returns current time in Philippine timezone"""
-    return datetime.now(PH_TIMEZONE)
+    """Returns current time in Philippine timezone (UTC+8)"""
+    utc_now = datetime.utcnow()
+    ph_time = utc_now + timedelta(hours=8)
+    return ph_time
 
 # ============= DATABASE SETUP =============
 def get_db():
-    # Use Render's persistent disk if available
     if os.path.exists('/opt/render/project/src/data'):
         db_path = '/opt/render/project/src/data/tapcy.db'
     else:
-        # Local development
         db_path = os.path.join(os.path.dirname(__file__), 'tapcy.db')
     
     conn = sqlite3.connect(db_path)
@@ -31,7 +28,6 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
     
-    # Table 1: Passengers
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS passengers (
             phone TEXT PRIMARY KEY,
@@ -43,7 +39,6 @@ def init_db():
         )
     ''')
     
-    # Table 2: Drivers
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS drivers (
             email TEXT PRIMARY KEY,
@@ -58,7 +53,6 @@ def init_db():
         )
     ''')
     
-    # Table 3: Bookings
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS bookings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +69,6 @@ def init_db():
         )
     ''')
     
-    # Table 4: Notifications
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS notifications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,10 +85,8 @@ def init_db():
     conn.commit()
     conn.close()
 
-# Initialize database
 init_db()
 
-# ============= IN-MEMORY FOR ACTIVE SESSIONS =============
 active_riders = {}
 active_drivers = {}
 
