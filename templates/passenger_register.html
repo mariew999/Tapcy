@@ -1,16 +1,45 @@
-@views.route("/passenger_register", methods=["POST"])
-def passenger_register():
+@views.route("/driver_register", methods=["POST"])
+def driver_register():
     name = request.form.get("name")
     phone = request.form.get("phone")
     email = request.form.get("email")
     password = request.form.get("password")
-    confirm_password = request.form.get("confirm_password")
-    
-    # DEBUG: Print what you're getting
-    print(f"DEBUG - Email received: '{email}'")
-    print(f"DEBUG - Contains @: {'@' in email}")
-    
+    confirm = request.form.get("confirm")
+    tricycle = request.form.get("tricycle")
+
+    if not name or not phone or not email or not password or not confirm or not tricycle:
+        flash("All fields are required", "error")
+        return redirect(url_for('views.driver_login'))
+
+    if not re.match(r'^\d{11}$', phone):
+        flash("Phone number must be exactly 11 digits", "error")
+        return redirect(url_for('views.driver_login'))
+
     if '@' not in email:
-        print("DEBUG - @ symbol missing!")  # This will show in logs
         flash("Email must contain @ symbol", "error")
-        return redirect(url_for('views.passenger_login'))
+        return redirect(url_for('views.driver_login'))
+
+    if len(password) < 8:
+        flash("Password must be at least 8 characters", "error")
+        return redirect(url_for('views.driver_login'))
+
+    if password != confirm:
+        flash("Passwords do not match", "error")
+        return redirect(url_for('views.driver_login'))
+
+    db = get_db()
+    
+    existing = db.execute("SELECT * FROM drivers WHERE email = ?", (email,)).fetchone()
+    if existing:
+        flash("Email already registered", "error")
+        db.close()
+        return redirect(url_for('views.driver_login'))
+    
+    db.execute('''INSERT INTO drivers (email, name, phone, password, tricycle, status, registered_date)
+                  VALUES (?, ?, ?, ?, ?, ?, ?)''',
+              (email, name, phone, password, tricycle, 'offline', get_local_time().strftime("%Y-%m-%d")))
+    db.commit()
+    db.close()
+
+    flash("Registration successful! Please login.", "success")
+    return redirect(url_for('views.driver_login'))
