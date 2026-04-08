@@ -104,6 +104,21 @@ def kiosk():
         return redirect(url_for('views.passenger_dashboard'))
     return render_template("kiosk.html", active_tab='kiosk')
 
+# ============= DIRECT REGISTRATION PAGES =============
+@views.route("/passenger_register_page")
+def passenger_register_page():
+    """Direct registration page - no login option shown"""
+    if 'passenger' in session:
+        return redirect(url_for('views.passenger_dashboard'))
+    return render_template("passenger_register_page.html", active_tab='kiosk')
+
+@views.route("/driver_register_page")
+def driver_register_page():
+    """Direct driver registration page"""
+    if 'driver' in session:
+        return redirect(url_for('views.driver_dashboard'))
+    return render_template("driver_register_page.html", active_tab='driver')
+
 # ============= PASSENGER SECTION =============
 @views.route("/passenger_login", methods=["GET", "POST"])
 def passenger_login():
@@ -149,23 +164,23 @@ def passenger_register():
 
     if not name or not phone or not email or not password or not confirm_password:
         flash("All fields are required", "error")
-        return redirect(url_for('views.passenger_login'))
+        return redirect(url_for('views.passenger_register_page'))
 
     if not re.match(r'^\d{11}$', phone):
         flash("Phone number must be exactly 11 digits", "error")
-        return redirect(url_for('views.passenger_login'))
+        return redirect(url_for('views.passenger_register_page'))
 
     if '@' not in email:
         flash("Email must contain @ symbol", "error")
-        return redirect(url_for('views.passenger_login'))
+        return redirect(url_for('views.passenger_register_page'))
 
     if len(password) < 8:
         flash("Password must be at least 8 characters", "error")
-        return redirect(url_for('views.passenger_login'))
+        return redirect(url_for('views.passenger_register_page'))
 
     if password != confirm_password:
         flash("Passwords do not match", "error")
-        return redirect(url_for('views.passenger_login'))
+        return redirect(url_for('views.passenger_register_page'))
 
     db = get_db()
     
@@ -173,13 +188,13 @@ def passenger_register():
     if existing:
         flash("Phone number already registered", "error")
         db.close()
-        return redirect(url_for('views.passenger_login'))
+        return redirect(url_for('views.passenger_register_page'))
     
     existing = db.execute("SELECT * FROM passengers WHERE email = ?", (email,)).fetchone()
     if existing:
         flash("Email already registered", "error")
         db.close()
-        return redirect(url_for('views.passenger_login'))
+        return redirect(url_for('views.passenger_register_page'))
     
     db.execute('''INSERT INTO passengers (phone, name, email, password, total_bookings, registered_date)
                   VALUES (?, ?, ?, ?, ?, ?)''', 
@@ -314,54 +329,51 @@ def driver_login():
 
     return render_template("driver_login.html", active_tab='driver')
 
-@views.route("/driver_register", methods=["GET", "POST"])
+@views.route("/driver_register", methods=["POST"])
 def driver_register():
-    if request.method == "POST":
-        name = request.form.get("name")
-        phone = request.form.get("phone")
-        email = request.form.get("email")
-        password = request.form.get("password")
-        confirm = request.form.get("confirm")
-        tricycle = request.form.get("tricycle")
+    name = request.form.get("name")
+    phone = request.form.get("phone")
+    email = request.form.get("email")
+    password = request.form.get("password")
+    confirm = request.form.get("confirm")
+    tricycle = request.form.get("tricycle")
 
-        if not name or not phone or not email or not password or not confirm or not tricycle:
-            flash("All fields are required", "error")
-            return render_template("driver_register.html", active_tab='driver')
+    if not name or not phone or not email or not password or not confirm or not tricycle:
+        flash("All fields are required", "error")
+        return redirect(url_for('views.driver_register_page'))
 
-        if not re.match(r'^\d{11}$', phone):
-            flash("Phone number must be exactly 11 digits", "error")
-            return render_template("driver_register.html", active_tab='driver')
+    if not re.match(r'^\d{11}$', phone):
+        flash("Phone number must be exactly 11 digits", "error")
+        return redirect(url_for('views.driver_register_page'))
 
-        if '@' not in email:
-            flash("Email must contain @ symbol", "error")
-            return render_template("driver_register.html", active_tab='driver')
+    if '@' not in email:
+        flash("Email must contain @ symbol", "error")
+        return redirect(url_for('views.driver_register_page'))
 
-        if len(password) < 8:
-            flash("Password must be at least 8 characters", "error")
-            return render_template("driver_register.html", active_tab='driver')
+    if len(password) < 8:
+        flash("Password must be at least 8 characters", "error")
+        return redirect(url_for('views.driver_register_page'))
 
-        if password != confirm:
-            flash("Passwords do not match", "error")
-            return render_template("driver_register.html", active_tab='driver')
+    if password != confirm:
+        flash("Passwords do not match", "error")
+        return redirect(url_for('views.driver_register_page'))
 
-        db = get_db()
-        
-        existing = db.execute("SELECT * FROM drivers WHERE email = ?", (email,)).fetchone()
-        if existing:
-            flash("Email already registered", "error")
-            db.close()
-            return render_template("driver_register.html", active_tab='driver')
-        
-        db.execute('''INSERT INTO drivers (email, name, phone, password, tricycle, status, registered_date)
-                      VALUES (?, ?, ?, ?, ?, ?, ?)''',
-                  (email, name, phone, password, tricycle, 'offline', get_local_time().strftime("%Y-%m-%d")))
-        db.commit()
+    db = get_db()
+    
+    existing = db.execute("SELECT * FROM drivers WHERE email = ?", (email,)).fetchone()
+    if existing:
+        flash("Email already registered", "error")
         db.close()
+        return redirect(url_for('views.driver_register_page'))
+    
+    db.execute('''INSERT INTO drivers (email, name, phone, password, tricycle, status, registered_date)
+                  VALUES (?, ?, ?, ?, ?, ?, ?)''',
+              (email, name, phone, password, tricycle, 'offline', get_local_time().strftime("%Y-%m-%d")))
+    db.commit()
+    db.close()
 
-        flash("Registration successful! Please login.", "success")
-        return redirect(url_for('views.driver_login'))
-
-    return render_template("driver_register.html", active_tab='driver')
+    flash("Registration successful! Please login.", "success")
+    return redirect(url_for('views.driver_login'))
 
 @views.route("/driver_dashboard")
 def driver_dashboard():
