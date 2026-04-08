@@ -2,11 +2,32 @@
 
 {% block content %}
 <div class="card" style="text-align: center;">
-    <h1> Driver Portal🧑‍</h1>
-    <p style="color: #ff9bcb; font-size: 18px; margin: 15px 0;">Your Manong Driver </p>
-    <div style="margin-top: 20px;">
-        <a href="{{ url_for('views.driver_login') }}" class="btn">Login</a>
-        <a href="{{ url_for('views.driver_register') }}" class="btn">Register</a>
+    <div class="emoji">🚗</div>
+    <h1>Driver Portal</h1>
+    <p style="color: #ff9bcb; font-size: 18px; margin: 15px 0;">Manage your rides and earnings</p>
+
+    <a href="{{ url_for('views.driver_login') }}?tab=register" class="btn" style="font-size: 18px; padding: 15px 40px; margin-top: 20px;">
+        Register as Driver 🎀
+    </a>
+
+    <hr>
+
+    <div style="text-align: left; margin-top: 20px;">
+        <h3 style="color: #ff69b4;">🌸 How it works:</h3>
+        <ul style="margin-top: 15px; list-style: none; padding: 0;">
+            <li style="margin: 12px 0; padding: 10px; background: #fff5f8; border-radius: 20px; color: #666;">
+                📱 Register with your details and tricycle number
+            </li>
+            <li style="margin: 12px 0; padding: 10px; background: #fff5f8; border-radius: 20px; color: #666;">
+                🟢 Go online to receive booking requests
+            </li>
+            <li style="margin: 12px 0; padding: 10px; background: #fff5f8; border-radius: 20px; color: #666;">
+                ✅ Accept rides and navigate to passenger
+            </li>
+            <li style="margin: 12px 0; padding: 10px; background: #fff5f8; border-radius: 20px; color: #666;">
+                💰 Complete rides to earn fare
+            </li>
+        </ul>
     </div>
 </div>
 {% endblock %}
