@@ -1,96 +1,30 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin Dashboard - Tapcy</title>
-    <style>
-        body {
-            font-family: Arial;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        h1 {
-            color: purple;
-            text-align: center;
-        }
-        .stats {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .stat-card {
-            background: purple;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            flex: 1;
-            text-align: center;
-        }
-        .stat-card h3 {
-            margin: 0;
-            font-size: 30px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background: purple;
-            color: white;
-        }
-        .section {
-            margin-top: 40px;
-        }
-        .nav-btn {
-            background: purple;
-            color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 5px;
-            display: inline-block;
-            margin: 10px;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
     <h1>🚕 Tapcy Admin Dashboard</h1>
     
-    <div class="stats">
+    <div class="stats-grid">
         <div class="stat-card">
-            <h3>{{ total_passengers }}</h3>
-            <p>Total Passengers</p>
+            <div class="stat-number">{{ total_passengers }}</div>
+            <div>Total Passengers</div>
         </div>
         <div class="stat-card">
-            <h3>{{ total_drivers }}</h3>
-            <p>Total Drivers</p>
+            <div class="stat-number">{{ total_drivers }}</div>
+            <div>Total Drivers</div>
         </div>
         <div class="stat-card">
-            <h3>{{ total_bookings }}</h3>
-            <p>Total Bookings</p>
+            <div class="stat-number">{{ total_bookings }}</div>
+            <div>Total Bookings</div>
         </div>
         <div class="stat-card">
-            <h3>{{ pending_bookings }}</h3>
-            <p>Pending Bookings</p>
+            <div class="stat-number">{{ pending_bookings }}</div>
+            <div>Pending Bookings</div>
         </div>
     </div>
-    
-    <div class="section">
-        <h2>📋 Recent Bookings</h2>
-        {% if bookings %}
+
+    <h2>📋 Recent Bookings</h2>
+    {% if bookings %}
         <table>
             <thead>
                 <tr>
@@ -100,7 +34,6 @@
                     <th>Dropoff</th>
                     <th>Fare</th>
                     <th>Status</th>
-                    <th>Driver</th>
                 </tr>
             </thead>
             <tbody>
@@ -112,19 +45,16 @@
                     <td>{{ booking.dropoff }}</td>
                     <td>₱{{ booking.fare }}</td>
                     <td>{{ booking.status }}</td>
-                    <td>{{ booking.driver or 'Not assigned' }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
+    {% else %}
         <p>No bookings yet.</p>
-        {% endif %}
-    </div>
-    
-    <div class="section">
-        <h2>👥 Passengers</h2>
-        {% if passengers %}
+    {% endif %}
+
+    <h2>👥 Passengers</h2>
+    {% if passengers %}
         <table>
             <thead>
                 <tr>
@@ -132,7 +62,6 @@
                     <th>Phone</th>
                     <th>Email</th>
                     <th>Bookings</th>
-                    <th>Registered</th>
                 </tr>
             </thead>
             <tbody>
@@ -142,19 +71,16 @@
                     <td>{{ passenger.phone }}</td>
                     <td>{{ passenger.email }}</td>
                     <td>{{ passenger.total_bookings }}</td>
-                    <td>{{ passenger.registered_date }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
+    {% else %}
         <p>No passengers yet.</p>
-        {% endif %}
-    </div>
-    
-    <div class="section">
-        <h2>🚗 Drivers</h2>
-        {% if drivers %}
+    {% endif %}
+
+    <h2>🚗 Drivers</h2>
+    {% if drivers %}
         <table>
             <thead>
                 <tr>
@@ -179,15 +105,12 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% else %}
+    {% else %}
         <p>No drivers yet.</p>
-        {% endif %}
-    </div>
-    
+    {% endif %}
+
     <div style="text-align: center; margin-top: 30px;">
-        <a href="/kiosk" class="nav-btn">🏠 Back to Kiosk</a>
-        <a href="/driver_portal" class="nav-btn">🚗 Driver Portal</a>
+        <a href="/" class="btn">🏠 Home</a>
     </div>
 </div>
-</body>
-</html>
+{% endblock %}
