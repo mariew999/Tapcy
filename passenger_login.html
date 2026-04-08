@@ -23,17 +23,11 @@
     <div id="registerForm" style="display: none;">
         <h3>Create Passenger Account</h3>
         <form method="POST" action="{{ url_for('views.passenger_register') }}" onsubmit="return validateForm()">
-            <input type="text" name="name" id="name" placeholder="Full Name" required>
-
-            <input type="text" name="phone" id="phone" placeholder="Phone Number (11 digits)" required>
-            <small style="color: #666; display: block; margin-top: -5px; margin-bottom: 10px;">Example: 09123456789</small>
-
-            <input type="email" name="email" id="email" placeholder="Email (example@mail.com)" required>
-
-            <input type="password" name="password" id="password" placeholder="Password (min 8 characters)" required>
-
-            <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required>
-
+            <input type="text" name="name" placeholder="Full Name" required>
+            <input type="text" name="phone" placeholder="Phone Number (11 digits)" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password (min 8 characters)" required>
+            <input type="password" name="confirm_password" placeholder="Confirm Password" required>
             <button type="submit">Register</button>
         </form>
         <p style="margin-top: 10px; font-size: 12px; color: #666;">After registration, login with your email and password</p>
@@ -56,36 +50,41 @@
     }
 
     function validateForm() {
-        var phone = document.getElementById('phone').value;
-        var email = document.getElementById('email').value;
-        var password = document.getElementById('password').value;
-        var confirm = document.getElementById('confirm_password').value;
+        var phone = document.querySelector('input[name="phone"]').value;
+        var email = document.querySelector('input[name="email"]').value;
+        var password = document.querySelector('input[name="password"]').value;
+        var confirm = document.querySelector('input[name="confirm_password"]').value;
 
-        // Phone number validation (11 digits)
         if (!/^\d{11}$/.test(phone)) {
             alert('Phone number must be exactly 11 digits (numbers only)');
             return false;
         }
 
-        // Email validation (must contain @)
         if (!email.includes('@')) {
             alert('Email must contain @ symbol');
             return false;
         }
 
-        // Password length validation (min 8 characters)
         if (password.length < 8) {
             alert('Password must be at least 8 characters long');
             return false;
         }
 
-        // Password match validation
         if (password !== confirm) {
             alert('Passwords do not match! Please re-enter.');
             return false;
         }
 
         return true;
+    }
+
+    // Show Register tab by default when coming with ?tab=register
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab');
+        if (tab === 'register') {
+            showRegister();
+        }
     }
 </script>
 {% endblock %}
