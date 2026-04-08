@@ -7,29 +7,31 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
     
-    # Table 1: Users
+    # Users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
             email TEXT UNIQUE,
             password TEXT,
-            phone TEXT
+            phone TEXT,
+            role TEXT
         )
     ''')
     
-    # Table 2: Bookings
+    # Bookings table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS bookings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
-            pickup TEXT,
-            destination TEXT,
-            date TEXT
+            pickup_zone TEXT,
+            passengers INTEGER,
+            status TEXT DEFAULT 'pending',
+            booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     
-    # Table 3: Feedback
+    # Feedback table (3rd table)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS feedback (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +43,6 @@ def init_db():
     
     conn.commit()
     conn.close()
-    print("Database ready!")
 
-if __name__ == '__main__':
-    init_db()
+init_db()
+print("Database ready!")
