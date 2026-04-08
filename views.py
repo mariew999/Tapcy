@@ -3,13 +3,26 @@ from datetime import datetime
 import re
 import sqlite3
 import os
+import pytz
 
 views = Blueprint('views', __name__)
 
+# ============= TIMEZONE SETUP (Philippines) =============
+PH_TIMEZONE = pytz.timezone('Asia/Manila')
+
+def get_local_time():
+    """Returns current time in Philippine timezone"""
+    return datetime.now(PH_TIMEZONE)
+
 # ============= DATABASE SETUP =============
 def get_db():
-    # Use absolute path to prevent Render from deleting database
-    db_path = os.path.join(os.path.dirname(__file__), 'tapcy.db')
+    # Use Render's persistent disk if available
+    if os.path.exists('/opt/render/project/src/data'):
+        db_path = '/opt/render/project/src/data/tapcy.db'
+    else:
+        # Local development
+        db_path = os.path.join(os.path.dirname(__file__), 'tapcy.db')
+    
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
@@ -120,12 +133,12 @@ def passenger_login():
                 'name': passenger['name'],
                 'email': email,
                 'logged_in': True,
-                'login_time': datetime.now().strftime("%Y-%m-%d %H:%M")
+                'login_time': get_local_time().strftime("%Y-%m-%d %H:%M")
             }
             active_riders[passenger['phone']] = {
                 'name': passenger['name'],
                 'email': email,
-                'login_time': datetime.now().strftime("%H:%M"),
+                'login_time': get_local_time().strftime("%H:%M"),
                 'status': 'active'
             }
             flash(f"🌸 Welcome back {passenger['name']}! You are now logged in.", "success")
@@ -179,7 +192,7 @@ def passenger_register():
     
     db.execute('''INSERT INTO passengers (phone, name, email, password, total_bookings, registered_date)
                   VALUES (?, ?, ?, ?, ?, ?)''', 
-               (phone, name, email, password, 0, datetime.now().strftime("%Y-%m-%d")))
+               (phone, name, email, password, 0, get_local_time().strftime("%Y-%m-%d")))
     db.commit()
     db.close()
 
@@ -231,8 +244,8 @@ def book_ride():
         cursor = db.execute('''INSERT INTO bookings (passenger_phone, passenger_name, pickup, dropoff, passengers, fare, status, time, date)
                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
                            (session['passenger']['phone'], session['passenger']['name'], pickup, dropoff, 
-                            passengers_count, fare, 'pending', datetime.now().strftime("%H:%M"), 
-                            datetime.now().strftime("%Y-%m-%d")))
+                            passengers_count, fare, 'pending', get_local_time().strftime("%H:%M"), 
+                            get_local_time().strftime("%Y-%m-%d")))
         booking_id = cursor.lastrowid
         
         db.execute("UPDATE passengers SET total_bookings = total_bookings + 1 WHERE phone = ?", 
@@ -244,7 +257,7 @@ def book_ride():
             db.execute('''INSERT INTO notifications (driver_email, booking_id, message, pickup, fare, time)
                           VALUES (?, ?, ?, ?, ?, ?)''',
                       (driver['email'], booking_id, f"New booking from {session['passenger']['name']}", 
-                       pickup, fare, datetime.now().strftime("%H:%M")))
+                       pickup, fare, get_local_time().strftime("%H:%M")))
         
         db.commit()
         db.close()
@@ -300,7 +313,7 @@ def driver_login():
             session['driver'] = {'email': driver['email'], 'name': driver['name']}
             active_drivers[email] = {
                 'name': driver['name'],
-                'login_time': datetime.now().strftime("%H:%M"),
+                'login_time': get_local_time().strftime("%H:%M"),
                 'status': driver['status']
             }
             flash(f"🚗 Welcome {driver['name']}! You are now online.", "success")
@@ -350,7 +363,7 @@ def driver_register():
         
         db.execute('''INSERT INTO drivers (email, name, phone, password, tricycle, status, registered_date)
                       VALUES (?, ?, ?, ?, ?, ?, ?)''',
-                  (email, name, phone, password, tricycle, 'offline', datetime.now().strftime("%Y-%m-%d")))
+                  (email, name, phone, password, tricycle, 'offline', get_local_time().strftime("%Y-%m-%d")))
         db.commit()
         db.close()
 
@@ -439,7 +452,7 @@ def toggle_driver_status():
         db.execute("UPDATE drivers SET status = 'available' WHERE email = ?", (session['driver']['email'],))
         active_drivers[session['driver']['email']] = {
             'name': session['driver']['name'],
-            'login_time': datetime.now().strftime("%H:%M"),
+            'login_time': get_local_time().strftime("%H:%M"),
             'status': 'online'
         }
         flash("🟢 Status: ONLINE - You will receive bookings", "success")
@@ -460,34 +473,28 @@ def driver_logout():
     flash("🚗 Logged out. Drive safe!", "success")
     return redirect(url_for('views.kiosk'))
 
-# ============= ADMIN SECTION (FIXED) =============
+# ============= ADMIN SECTION =============
 @views.route("/admin_dashboard")
 def admin_dashboard():
     db = get_db()
     
-    # Get all data from SQLite
     bookings = db.execute("SELECT * FROM bookings ORDER BY id DESC").fetchall()
     passengers = db.execute("SELECT * FROM passengers").fetchall()
     drivers = db.execute("SELECT * FROM drivers").fetchall()
     
-    # Get counts
     total_passengers = len(passengers)
     total_drivers = len(drivers)
     total_bookings = len(bookings)
-    pending_bookings = db.execute("SELECT COUNT(*) as count FROM bookings WHERE status = 'pending'").fetchone()['count']
+    pending = db.execute("SELECT COUNT(*) as count FROM bookings WHERE status = 'pending'").fetchone()
+    pending_bookings = pending['count'] if pending else 0
     
     db.close()
     
-    # Convert to list of dicts for easy display in template
-    passengers_list = [dict(row) for row in passengers]
-    drivers_list = [dict(row) for row in drivers]
-    bookings_list = [dict(row) for row in bookings]
-    
     return render_template("admin_dashboard.html",
                            active_tab='admin',
-                           bookings=bookings_list,
-                           passengers=passengers_list,
-                           drivers=drivers_list,
+                           bookings=[dict(row) for row in bookings],
+                           passengers=[dict(row) for row in passengers],
+                           drivers=[dict(row) for row in drivers],
                            total_passengers=total_passengers,
                            total_drivers=total_drivers,
                            total_bookings=total_bookings,
