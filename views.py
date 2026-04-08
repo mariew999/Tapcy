@@ -97,21 +97,6 @@ def home():
         return redirect(url_for('views.passenger_dashboard'))
     return redirect(url_for('views.passenger_login'))
 
-# ============= DIRECT REGISTRATION PAGES =============
-@views.route("/passenger_register_page")
-def passenger_register_page():
-    """Direct registration page - no login option shown"""
-    if 'passenger' in session:
-        return redirect(url_for('views.passenger_dashboard'))
-    return render_template("passenger_register_page.html", active_tab='kiosk')
-
-@views.route("/driver_register_page")
-def driver_register_page():
-    """Direct driver registration page"""
-    if 'driver' in session:
-        return redirect(url_for('views.driver_dashboard'))
-    return render_template("driver_register_page.html", active_tab='driver')
-
 # ============= PASSENGER SECTION =============
 @views.route("/passenger_login", methods=["GET", "POST"])
 def passenger_login():
@@ -145,7 +130,7 @@ def passenger_login():
         else:
             flash("Invalid email or password", "error")
 
-    return render_template("passenger_login.html", active_tab='kiosk')
+    return render_template("passenger_login.html")
 
 @views.route("/passenger_register", methods=["POST"])
 def passenger_register():
@@ -157,23 +142,23 @@ def passenger_register():
 
     if not name or not phone or not email or not password or not confirm_password:
         flash("All fields are required", "error")
-        return redirect(url_for('views.passenger_register_page'))
+        return redirect(url_for('views.passenger_login'))
 
     if not re.match(r'^\d{11}$', phone):
         flash("Phone number must be exactly 11 digits", "error")
-        return redirect(url_for('views.passenger_register_page'))
+        return redirect(url_for('views.passenger_login'))
 
     if '@' not in email:
         flash("Email must contain @ symbol", "error")
-        return redirect(url_for('views.passenger_register_page'))
+        return redirect(url_for('views.passenger_login'))
 
     if len(password) < 8:
         flash("Password must be at least 8 characters", "error")
-        return redirect(url_for('views.passenger_register_page'))
+        return redirect(url_for('views.passenger_login'))
 
     if password != confirm_password:
         flash("Passwords do not match", "error")
-        return redirect(url_for('views.passenger_register_page'))
+        return redirect(url_for('views.passenger_login'))
 
     db = get_db()
     
@@ -181,13 +166,13 @@ def passenger_register():
     if existing:
         flash("Phone number already registered", "error")
         db.close()
-        return redirect(url_for('views.passenger_register_page'))
+        return redirect(url_for('views.passenger_login'))
     
     existing = db.execute("SELECT * FROM passengers WHERE email = ?", (email,)).fetchone()
     if existing:
         flash("Email already registered", "error")
         db.close()
-        return redirect(url_for('views.passenger_register_page'))
+        return redirect(url_for('views.passenger_login'))
     
     db.execute('''INSERT INTO passengers (phone, name, email, password, total_bookings, registered_date)
                   VALUES (?, ?, ?, ?, ?, ?)''', 
@@ -219,7 +204,6 @@ def passenger_dashboard():
         })
 
     return render_template("passenger_dashboard.html",
-                           active_tab='kiosk',
                            passenger=session['passenger'],
                            bookings=bookings,
                            active_riders=active_riders_list,
@@ -264,7 +248,7 @@ def book_ride():
         flash(f"🎀 Booking #{booking_id} created! Fare: ₱{fare}. {len(available_drivers)} driver(s) notified.", "success")
         return redirect(url_for('views.passenger_dashboard'))
 
-    return render_template("book_ride.html", active_tab='kiosk', passenger=session['passenger'])
+    return render_template("book_ride.html", passenger=session['passenger'])
 
 @views.route("/cancel_booking/<int:booking_id>")
 def cancel_booking(booking_id):
@@ -289,12 +273,6 @@ def passenger_logout():
     return redirect(url_for('views.passenger_login'))
 
 # ============= DRIVER SECTION =============
-@views.route("/driver_portal")
-def driver_portal():
-    if 'driver' in session:
-        return redirect(url_for('views.driver_dashboard'))
-    return render_template("driver_portal.html", active_tab='driver')
-
 @views.route("/driver_login", methods=["GET", "POST"])
 def driver_login():
     if 'driver' in session:
@@ -320,7 +298,7 @@ def driver_login():
         else:
             flash("Invalid email or password", "error")
 
-    return render_template("driver_login.html", active_tab='driver')
+    return render_template("driver_login.html")
 
 @views.route("/driver_register", methods=["POST"])
 def driver_register():
@@ -333,23 +311,23 @@ def driver_register():
 
     if not name or not phone or not email or not password or not confirm or not tricycle:
         flash("All fields are required", "error")
-        return redirect(url_for('views.driver_register_page'))
+        return redirect(url_for('views.driver_login'))
 
     if not re.match(r'^\d{11}$', phone):
         flash("Phone number must be exactly 11 digits", "error")
-        return redirect(url_for('views.driver_register_page'))
+        return redirect(url_for('views.driver_login'))
 
     if '@' not in email:
         flash("Email must contain @ symbol", "error")
-        return redirect(url_for('views.driver_register_page'))
+        return redirect(url_for('views.driver_login'))
 
     if len(password) < 8:
         flash("Password must be at least 8 characters", "error")
-        return redirect(url_for('views.driver_register_page'))
+        return redirect(url_for('views.driver_login'))
 
     if password != confirm:
         flash("Passwords do not match", "error")
-        return redirect(url_for('views.driver_register_page'))
+        return redirect(url_for('views.driver_login'))
 
     db = get_db()
     
@@ -357,7 +335,7 @@ def driver_register():
     if existing:
         flash("Email already registered", "error")
         db.close()
-        return redirect(url_for('views.driver_register_page'))
+        return redirect(url_for('views.driver_login'))
     
     db.execute('''INSERT INTO drivers (email, name, phone, password, tricycle, status, registered_date)
                   VALUES (?, ?, ?, ?, ?, ?, ?)''',
@@ -388,7 +366,6 @@ def driver_dashboard():
     db.close()
 
     return render_template("driver_dashboard.html",
-                           active_tab='driver',
                            driver=session['driver'],
                            driver_info=driver,
                            pending_bookings=pending_bookings,
@@ -487,7 +464,6 @@ def admin_dashboard():
     db.close()
     
     return render_template("admin_dashboard.html",
-                           active_tab='admin',
                            bookings=[dict(row) for row in bookings],
                            passengers=[dict(row) for row in passengers],
                            drivers=[dict(row) for row in drivers],
