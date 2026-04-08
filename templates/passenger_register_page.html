@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - Tapcy</title>
+    <style>
+        body { font-family: Arial; background-color: #f4f4f4; text-align: center; padding-top: 50px; }
+        .container { background: white; width: 400px; margin: auto; padding: 30px; border-radius: 10px; }
+        h1 { color: purple; }
+        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 12px 30px; background-color: purple; color: white; border: none; border-radius: 5px; cursor: pointer; width: 100%; }
+        .message { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .login-link { margin-top: 20px; display: block; color: purple; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🚗 Tapcy</h1>
+    <h2>Create Passenger Account</h2>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <div class="message {{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endwith %}
+    
+    <form method="POST" action="{{ url_for('views.passenger_register') }}">
+        <input type="text" name="name" placeholder="Full Name" required><br>
+        <input type="text" name="phone" placeholder="Phone Number (11 digits)" required><br>
+        <input type="email" name="email" placeholder="Email" required><br>
+        <input type="password" name="password" placeholder="Password (min 8 characters)" required><br>
+        <input type="password" name="confirm_password" placeholder="Confirm Password" required><br>
+        <button type="submit">Register</button>
+    </form>
+    
+    <a href="/passenger_login" class="login-link">Already have an account? Login here</a>
+    <a href="/kiosk" class="login-link">← Back</a>
+</div>
+</body>
+</html>
