@@ -2,12 +2,15 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from datetime import datetime
 import re
 import sqlite3
+import os
 
 views = Blueprint('views', __name__)
 
 # ============= DATABASE SETUP =============
 def get_db():
-    conn = sqlite3.connect('tapcy.db')
+    # Use absolute path to prevent Render from deleting database
+    db_path = os.path.join(os.path.dirname(__file__), 'tapcy.db')
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -15,6 +18,7 @@ def init_db():
     conn = get_db()
     cursor = conn.cursor()
     
+    # Table 1: Passengers
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS passengers (
             phone TEXT PRIMARY KEY,
@@ -26,6 +30,7 @@ def init_db():
         )
     ''')
     
+    # Table 2: Drivers
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS drivers (
             email TEXT PRIMARY KEY,
@@ -40,6 +45,7 @@ def init_db():
         )
     ''')
     
+    # Table 3: Bookings
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS bookings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,6 +62,7 @@ def init_db():
         )
     ''')
     
+    # Table 4: Notifications
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS notifications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -72,6 +79,7 @@ def init_db():
     conn.commit()
     conn.close()
 
+# Initialize database
 init_db()
 
 # ============= IN-MEMORY FOR ACTIVE SESSIONS =============
@@ -452,19 +460,37 @@ def driver_logout():
     flash("🚗 Logged out. Drive safe!", "success")
     return redirect(url_for('views.kiosk'))
 
-# ============= ADMIN SECTION =============
+# ============= ADMIN SECTION (FIXED) =============
 @views.route("/admin_dashboard")
 def admin_dashboard():
     db = get_db()
+    
+    # Get all data from SQLite
     bookings = db.execute("SELECT * FROM bookings ORDER BY id DESC").fetchall()
     passengers = db.execute("SELECT * FROM passengers").fetchall()
     drivers = db.execute("SELECT * FROM drivers").fetchall()
+    
+    # Get counts
+    total_passengers = len(passengers)
+    total_drivers = len(drivers)
+    total_bookings = len(bookings)
+    pending_bookings = db.execute("SELECT COUNT(*) as count FROM bookings WHERE status = 'pending'").fetchone()['count']
+    
     db.close()
+    
+    # Convert to list of dicts for easy display in template
+    passengers_list = [dict(row) for row in passengers]
+    drivers_list = [dict(row) for row in drivers]
+    bookings_list = [dict(row) for row in bookings]
     
     return render_template("admin_dashboard.html",
                            active_tab='admin',
-                           bookings=bookings,
-                           passengers=passengers,
-                           drivers=drivers,
+                           bookings=bookings_list,
+                           passengers=passengers_list,
+                           drivers=drivers_list,
+                           total_passengers=total_passengers,
+                           total_drivers=total_drivers,
+                           total_bookings=total_bookings,
+                           pending_bookings=pending_bookings,
                            active_riders=active_riders,
                            active_drivers=active_drivers)
