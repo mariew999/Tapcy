@@ -28,7 +28,7 @@
         <form method="POST" action="{{ url_for('views.passenger_register') }}" onsubmit="return validateForm()">
             <input type="text" name="name" id="name" placeholder="Full Name" required>
             <input type="text" name="phone" id="phone" placeholder="Phone Number (11 digits)" required>
-            <small style="color: #666; display: block; margin-top: -5px; margin-bottom: 10px;">Example: 09123456789</small>
+            <small style="color: #666; display: block; text-align: left;margin-top: -5px; margin-bottom: 10px;">Example: 09123456789</small>
             <input type="email" name="email" id="email" placeholder="Email (example@mail.com)" required>
             <input type="password" name="password" id="password" placeholder="Password (min 8 characters)" required>
             <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required>
