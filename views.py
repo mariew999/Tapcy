@@ -95,14 +95,7 @@ active_drivers = {}
 def home():
     if 'passenger' in session:
         return redirect(url_for('views.passenger_dashboard'))
-    return redirect(url_for('views.kiosk'))
-
-@views.route("/kiosk")
-def kiosk():
-    if 'passenger' in session:
-        flash("🌸 You are already logged in!", "info")
-        return redirect(url_for('views.passenger_dashboard'))
-    return render_template("kiosk.html", active_tab='kiosk')
+    return redirect(url_for('views.passenger_login'))
 
 # ============= DIRECT REGISTRATION PAGES =============
 @views.route("/passenger_register_page")
@@ -293,7 +286,7 @@ def passenger_logout():
         active_riders.pop(session['passenger']['phone'], None)
         flash(f"🌸 Goodbye {session['passenger']['name']}! You have been logged out.", "success")
     session.pop('passenger', None)
-    return redirect(url_for('views.kiosk'))
+    return redirect(url_for('views.passenger_login'))
 
 # ============= DRIVER SECTION =============
 @views.route("/driver_portal")
@@ -474,7 +467,7 @@ def driver_logout():
         db.close()
     session.pop('driver', None)
     flash("🚗 Logged out. Drive safe!", "success")
-    return redirect(url_for('views.kiosk'))
+    return redirect(url_for('views.passenger_login'))
 
 # ============= ADMIN SECTION =============
 @views.route("/admin_dashboard")
