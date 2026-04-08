@@ -169,8 +169,8 @@
 <body>
 
 <div class="tabs">
-    <a href="{{ url_for('views.kiosk') }}" {% if active_tab == 'kiosk' %}class="active"{% endif %}>Kiosk</a>
-    <a href="{{ url_for('views.driver_portal') }}" {% if active_tab == 'driver' %}class="active"{% endif %}>Driver Portal</a>
+    <a href="{{ url_for('views.passenger_login') }}" {% if active_tab == 'passenger' %}class="active"{% endif %}>Passenger</a>
+    <a href="{{ url_for('views.driver_login') }}" {% if active_tab == 'driver' %}class="active"{% endif %}>Driver</a>
     <a href="{{ url_for('views.admin_dashboard') }}" {% if active_tab == 'admin' %}class="active"{% endif %}>Admin</a>
 </div>
 
