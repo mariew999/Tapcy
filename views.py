@@ -8,7 +8,6 @@ views = Blueprint('views', __name__)
 
 # ============= TIMEZONE SETUP (Philippines UTC+8) =============
 def get_local_time():
-    """Returns current time in Philippine timezone (UTC+8)"""
     utc_now = datetime.utcnow()
     ph_time = utc_now + timedelta(hours=8)
     return ph_time
@@ -140,7 +139,6 @@ def passenger_register():
     password = request.form.get("password")
     confirm_password = request.form.get("confirm_password")
 
-    # Validation
     if not name or not phone or not email or not password or not confirm_password:
         flash("All fields are required", "error")
         return redirect(url_for('views.passenger_login'))
@@ -310,7 +308,6 @@ def driver_register():
     confirm = request.form.get("confirm")
     tricycle = request.form.get("tricycle")
 
-    # Validation
     if not name or not phone or not email or not password or not confirm or not tricycle:
         flash("All fields are required", "error")
         return redirect(url_for('views.driver_login'))
