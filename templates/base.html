@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Tapcy</title>
-    <!-- GLOBAL STYLES - applies to all pages -->
     <style>
         * {
             margin: 0;
@@ -15,7 +14,7 @@
             background-color: #f4f4f4;
         }
 
-        /* NAVIGATION TABS - Passenger, Driver, Admin links */
+        /* NAVIGATION TABS */
         .tabs {
             background: #2c1e3a;
             padding: 15px;
@@ -28,6 +27,12 @@
             padding: 10px 30px;
             margin: 0 10px;
             border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .tabs a:hover {
+            background: #ff9800;
+            opacity: 0.8;
         }
 
         .tabs a.active {
@@ -41,7 +46,7 @@
             padding: 20px;
         }
 
-        /* CARD STYLE - white background with shadow */
+        /* CARD STYLE */
         .card {
             background: white;
             padding: 30px;
@@ -61,6 +66,10 @@
             display: inline-block;
         }
 
+        .btn:hover, button:hover {
+            opacity: 0.8;
+        }
+
         /* FORM INPUTS */
         input, select {
             width: 100%;
@@ -70,7 +79,7 @@
             border-radius: 5px;
         }
 
-        /* FLASH MESSAGES - success, error, info */
+        /* FLASH MESSAGES */
         .message {
             padding: 10px;
             margin: 10px 0;
@@ -92,7 +101,7 @@
             color: #0c5460;
         }
 
-        /* TABLES - for displaying data */
+        /* TABLES */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -110,7 +119,7 @@
             color: white;
         }
 
-        /* STATS GRID - for admin dashboard */
+        /* STATS GRID */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -142,15 +151,16 @@
 </head>
 <body>
 
-<!-- GLOBAL NAVIGATION BAR - appears on all pages -->
+<!-- NAVIGATION TABS - NOW WITH HOME BUTTON -->
 <div class="tabs">
-    <a href="{{ url_for('views.passenger_login') }}" {% if active_tab == 'passenger' %}class="active"{% endif %}>Passenger</a>
-    <a href="{{ url_for('views.driver_login') }}" {% if active_tab == 'driver' %}class="active"{% endif %}>Driver</a>
-    <a href="{{ url_for('views.admin_dashboard') }}" {% if active_tab == 'admin' %}class="active"{% endif %}>Admin</a>
+    <a href="{{ url_for('views.home') }}" {% if active_tab == 'home' %}class="active"{% endif %}>🏠 Home</a>
+    <a href="{{ url_for('views.passenger_login') }}" {% if active_tab == 'passenger' %}class="active"{% endif %}>👤 Passenger</a>
+    <a href="{{ url_for('views.driver_login') }}" {% if active_tab == 'driver' %}class="active"{% endif %}>🚗 Driver</a>
+    <a href="{{ url_for('views.admin_dashboard') }}" {% if active_tab == 'admin' %}class="active"{% endif %}>👑 Admin</a>
 </div>
 
 <div class="container">
-    <!-- FLASH MESSAGES DISPLAY - shows success/error messages -->
+    <!-- FLASH MESSAGES DISPLAY -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
             <div class="message {{ category }}">{{ message }}</div>
