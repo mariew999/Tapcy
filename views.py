@@ -303,12 +303,19 @@ def driver_login():
 
         if driver:
             session['driver'] = {'email': driver['email'], 'name': driver['name']}
+            
+            # NEW: Auto-set driver to available/online when they login
+            db = get_db()
+            db.execute("UPDATE drivers SET status = 'available' WHERE email = ?", (email,))
+            db.commit()
+            db.close()
+            
             active_drivers[email] = {
                 'name': driver['name'],
                 'login_time': get_local_time().strftime("%H:%M"),
-                'status': driver['status']
+                'status': 'available'
             }
-            flash(f"🚗 Welcome {driver['name']}!", "success")
+            flash(f"🚗 Welcome {driver['name']}! You are now ONLINE and will receive bookings.", "success")
             return redirect(url_for('views.driver_dashboard'))
         else:
             flash("Invalid email or password", "error")
