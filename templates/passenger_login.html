@@ -28,12 +28,9 @@
         <h3>Create Passenger Account</h3>
         <form method="POST" action="{{ url_for('views.passenger_register') }}" onsubmit="return validateForm()">
             <input type="text" name="name" id="name" placeholder="Full Name" required>
-            <!-- PHONE VALIDATION: must be exactly 11 digits -->
             <input type="text" name="phone" id="phone" placeholder="Phone Number (11 digits)" required>
             <small style="color: #666; display: block; text-align: left;margin-top: -5px; margin-bottom: 10px;">Example: 09123456789</small>
-            <!-- EMAIL VALIDATION: must contain @ symbol -->
             <input type="email" name="email" id="email" placeholder="Email (example@mail.com)" required>
-            <!-- PASSWORD VALIDATION: minimum 8 characters -->
             <input type="password" name="password" id="password" placeholder="Password (min 8 characters)" required>
             <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirm Password" required>
             <button type="submit">Register</button>
@@ -43,7 +40,6 @@
 
     <hr>
 
-    <!-- HOW IT WORKS SECTION - instructions for users -->
     <div style="text-align: left;">
         <h3 style="color: #ff69b4;">🌸 How it works:</h3>
         <ul style="margin-top: 15px; list-style: none; padding: 0;">
@@ -63,9 +59,8 @@
     </div>
 </div>
 
-<!-- JAVASCRIPT VALIDATION - frontend form checking -->
 <script>
-    # FUNCTION: showLogin() - displays login form, hides register form
+    // FUNCTION: showLogin() - displays login form, hides register form
     function showLogin() {
         document.getElementById('loginForm').style.display = 'block';
         document.getElementById('registerForm').style.display = 'none';
@@ -73,7 +68,7 @@
         document.getElementById('registerBtn').style.background = 'gray';
     }
 
-    # FUNCTION: showRegister() - displays register form, hides login form
+    // FUNCTION: showRegister() - displays register form, hides login form
     function showRegister() {
         document.getElementById('loginForm').style.display = 'none';
         document.getElementById('registerForm').style.display = 'block';
@@ -81,9 +76,9 @@
         document.getElementById('registerBtn').style.background = 'purple';
     }
 
-    # FUNCTION: validateForm() - checks all fields before submitting
+    // FUNCTION: validateForm() - checks all fields before submitting
     function validateForm() {
-        # PHONE VALIDATION: exactly 11 digits, numbers only
+        // PHONE VALIDATION: exactly 11 digits, numbers only
         var phone = document.getElementById('phone').value;
         var email = document.getElementById('email').value;
         var password = document.getElementById('password').value;
@@ -94,19 +89,19 @@
             return false;
         }
 
-        # EMAIL VALIDATION: must contain @ symbol
+        // EMAIL VALIDATION: must contain @ symbol
         if (!email.includes('@')) {
             alert('Email must contain @ symbol');
             return false;
         }
 
-        # PASSWORD VALIDATION: minimum 8 characters
+        // PASSWORD VALIDATION: minimum 8 characters
         if (password.length < 8) {
             alert('Password must be at least 8 characters long');
             return false;
         }
 
-        # PASSWORD CONFIRMATION: must match
+        // PASSWORD CONFIRMATION: must match
         if (password !== confirm) {
             alert('Passwords do not match! Please re-enter.');
             return false;
@@ -115,7 +110,7 @@
         return true;
     }
 
-    # AUTO-SHOW REGISTER FORM if URL has ?tab=register
+    // AUTO-SHOW REGISTER FORM if URL has ?tab=register
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         const tab = urlParams.get('tab');
