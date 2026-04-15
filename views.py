@@ -445,12 +445,20 @@ def complete_ride(booking_id):
         return redirect(url_for('views.driver_login'))
 
     db = get_db()
-    booking = db.execute("SELECT fare FROM bookings WHERE id = ?", (booking_id,)).fetchone()
+    booking = db.execute("SELECT fare, passenger_phone FROM bookings WHERE id = ?", (booking_id,)).fetchone()
     
     if booking:
+        # Update booking status
         db.execute("UPDATE bookings SET status = 'completed' WHERE id = ?", (booking_id,))
+        
+        # Update driver earnings
         db.execute("UPDATE drivers SET earnings = earnings + ? WHERE email = ?",
                   (booking['fare'], session['driver']['email']))
+        
+        # FIX: Update passenger's total_bookings (increment by 1 for completed ride)
+        db.execute("UPDATE passengers SET total_bookings = total_bookings + 1 WHERE phone = ?",
+                  (booking['passenger_phone'],))
+        
         db.commit()
         flash(f"🎉 Ride completed! Earned ₱{booking['fare']}", "success")
     
