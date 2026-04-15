@@ -310,7 +310,11 @@ def driver_register():
     password = request.form.get("password")
     confirm = request.form.get("confirm")
     tricycle = request.form.get("tricycle")
-
+    
+    # FIX: Remove hidden spaces from email
+    if email:
+        email = email.strip()
+    
     if not name or not phone or not email or not password or not confirm or not tricycle:
         flash("All fields are required", "error")
         return redirect(url_for('views.driver_login'))
@@ -319,8 +323,9 @@ def driver_register():
         flash("Phone number must be exactly 11 digits", "error")
         return redirect(url_for('views.driver_login'))
 
+    # IMPROVED EMAIL CHECK with better error message
     if '@' not in email:
-        flash("Email must contain @ symbol", "error")
+        flash(f"Email must contain @ symbol. You entered: '{email}'", "error")
         return redirect(url_for('views.driver_login'))
 
     if len(password) < 8:
