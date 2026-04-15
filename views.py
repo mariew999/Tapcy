@@ -311,9 +311,21 @@ def driver_register():
     confirm = request.form.get("confirm")
     tricycle = request.form.get("tricycle")
     
-    # FIX: Remove hidden spaces from email
+    # DEBUG: Print raw values to Render log
+    print("=" * 50)
+    print(f"RAW NAME: '{name}'")
+    print(f"RAW PHONE: '{phone}'") 
+    print(f"RAW EMAIL: '{email}'")
+    print(f"RAW EMAIL LENGTH: {len(email) if email else 0}")
+    print(f"RAW PASSWORD: '{password}'")
+    print(f"RAW CONFIRM: '{confirm}'")
+    print(f"RAW TRICYCLE: '{tricycle}'")
+    print("=" * 50)
+    
+    # Check each character of email
     if email:
-        email = email.strip()
+        for i, char in enumerate(email):
+            print(f"Char {i}: '{char}' (ASCII: {ord(char)})")
     
     if not name or not phone or not email or not password or not confirm or not tricycle:
         flash("All fields are required", "error")
@@ -323,9 +335,15 @@ def driver_register():
         flash("Phone number must be exactly 11 digits", "error")
         return redirect(url_for('views.driver_login'))
 
-    # IMPROVED EMAIL CHECK with better error message
-    if '@' not in email:
-        flash(f"Email must contain @ symbol. You entered: '{email}'", "error")
+    # TEMPORARILY REMOVE THE @ CHECK - JUST FOR TESTING
+    # if '@' not in email:
+    #     flash(f"Email must contain @ symbol. You entered: '{email}'", "error")
+    #     return redirect(url_for('views.driver_login'))
+    
+    # Use a proper email regex instead
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_pattern, email):
+        flash(f"Please enter a valid email address (e.g., name@example.com). You entered: '{email}'", "error")
         return redirect(url_for('views.driver_login'))
 
     if len(password) < 8:
@@ -352,7 +370,6 @@ def driver_register():
 
     flash("Registration successful! Please login.", "success")
     return redirect(url_for('views.driver_login'))
-
 @views.route("/driver_dashboard")
 def driver_dashboard():
     if 'driver' not in session:
