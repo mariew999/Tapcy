@@ -89,17 +89,14 @@ init_db()
 active_riders = {}
 active_drivers = {}
 
-# ============= HOME PAGE (UPDATED - NOW SHOWS INDEX.HTML) =============
+# ============= HOME PAGE =============
 @views.route("/")
 def home():
-    # If passenger is logged in, send to their dashboard
     if 'passenger' in session:
         return redirect(url_for('views.passenger_dashboard'))
-    # If driver is logged in, send to their dashboard
     if 'driver' in session:
         return redirect(url_for('views.driver_dashboard'))
-    # If no one is logged in, show the homepage (index.html)
-    return render_template("index.html")
+    return render_template("index.html", active_tab='home')
 
 # ============= PASSENGER SECTION =============
 @views.route("/passenger_login", methods=["GET", "POST"])
@@ -134,7 +131,7 @@ def passenger_login():
         else:
             flash("Invalid email or password", "error")
 
-    return render_template("passenger_login.html")
+    return render_template("passenger_login.html", active_tab='passenger')
 
 @views.route("/passenger_register", methods=["POST"])
 def passenger_register():
@@ -208,6 +205,7 @@ def passenger_dashboard():
         })
 
     return render_template("passenger_dashboard.html",
+                           active_tab='passenger',
                            passenger=session['passenger'],
                            bookings=bookings,
                            active_riders=active_riders_list,
@@ -252,7 +250,7 @@ def book_ride():
         flash(f"🎀 Booking #{booking_id} created! Fare: ₱{fare}. {len(available_drivers)} driver(s) notified.", "success")
         return redirect(url_for('views.passenger_dashboard'))
 
-    return render_template("book_ride.html", passenger=session['passenger'])
+    return render_template("book_ride.html", passenger=session['passenger'], active_tab='passenger')
 
 @views.route("/cancel_booking/<int:booking_id>")
 def cancel_booking(booking_id):
@@ -302,7 +300,7 @@ def driver_login():
         else:
             flash("Invalid email or password", "error")
 
-    return render_template("driver_login.html")
+    return render_template("driver_login.html", active_tab='driver')
 
 @views.route("/driver_register", methods=["POST"])
 def driver_register():
@@ -370,6 +368,7 @@ def driver_dashboard():
     db.close()
 
     return render_template("driver_dashboard.html",
+                           active_tab='driver',
                            driver=session['driver'],
                            driver_info=driver,
                            pending_bookings=pending_bookings,
@@ -468,6 +467,7 @@ def admin_dashboard():
     db.close()
     
     return render_template("admin_dashboard.html",
+                           active_tab='admin',
                            bookings=[dict(row) for row in bookings],
                            passengers=[dict(row) for row in passengers],
                            drivers=[dict(row) for row in drivers],
