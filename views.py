@@ -313,25 +313,24 @@ def driver_register():
     
     if not name or not phone or not email or not password or not confirm or not tricycle:
         flash("All fields are required", "error")
-        # Stay on register page instead of redirecting to login
-        return render_template("driver_login.html", active_tab='driver', show_register=True)
+        return redirect(url_for('views.driver_login', tab='register'))
 
     if not re.match(r'^\d{11}$', phone):
         flash("Phone number must be exactly 11 digits", "error")
-        return render_template("driver_login.html", active_tab='driver', show_register=True)
+        return redirect(url_for('views.driver_login', tab='register'))
 
     # Email validation
     if '@' not in email or '.' not in email:
         flash(f"Please enter a valid email address (e.g., name@example.com). You entered: '{email}'", "error")
-        return render_template("driver_login.html", active_tab='driver', show_register=True)
+        return redirect(url_for('views.driver_login', tab='register'))
 
     if len(password) < 8:
         flash("Password must be at least 8 characters", "error")
-        return render_template("driver_login.html", active_tab='driver', show_register=True)
+        return redirect(url_for('views.driver_login', tab='register'))
 
     if password != confirm:
         flash("Passwords do not match", "error")
-        return render_template("driver_login.html", active_tab='driver', show_register=True)
+        return redirect(url_for('views.driver_login', tab='register'))
 
     db = get_db()
     
@@ -339,7 +338,7 @@ def driver_register():
     if existing:
         flash("Email already registered", "error")
         db.close()
-        return render_template("driver_login.html", active_tab='driver', show_register=True)
+        return redirect(url_for('views.driver_login', tab='register'))
     
     db.execute('''INSERT INTO drivers (email, name, phone, password, tricycle, status, registered_date)
                   VALUES (?, ?, ?, ?, ?, ?, ?)''',
