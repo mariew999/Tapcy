@@ -5,15 +5,38 @@
     <h2>Book a Ride</h2>
     <p>Hi <strong>{{ passenger.name }}</strong>! Where are you going?</p>
 
-    <!-- BOOKING FORM - where passengers create new rides -->
     <form method="POST" action="{{ url_for('views.book_ride') }}" onsubmit="return calculateFare()">
-        <label>📍 Pick-up Location</label>
-        <input type="text" name="pickup" placeholder="Enter your current location" required>
+        
+        <!-- PICKUP LOCATION - DROPDOWN with Cabagan Barangays -->
+        <label>📍 Pick-up Location (Barangay)</label>
+        <select name="pickup" id="pickup" required>
+            <option value="">-- Select Barangay --</option>
+            <option value="Magassi">Magassi</option>
+            <option value="Balasig">Balasig</option>
+            <option value="Cansan">Cansan</option>
+            <option value="Angancasilian">Angancasilian</option>
+            <option value="Garita">Garita</option>
+            <option value="Cubag">Cubag</option>
+            <option value="Ngarag">Ngarag</option>
+            <option value="Anao">Anao</option>
+            <option value="Centro">Centro</option>
+            <option value="Catabayungan">Catabayungan</option>
+            <option value="Casibarag Sur">Casibarag Sur</option>
+            <option value="Casibarag Norte">Casibarag Norte</option>
+            <option value="Luquilu">Luquilu</option>
+        </select>
+
+        <!-- SPECIFIC PUROK / DETAILS (optional) -->
+        <label>📍 Specific Purok/Details (Optional)</label>
+        <input type="text" name="pickup_details" id="pickup_details" placeholder="Example: Purok 6, near church, etc.">
+
+        <small style="color: #666; display: block; margin-top: -5px; margin-bottom: 15px;">
+            Cabagan, Isabela - Add specific purok or landmark
+        </small>
 
         <label>📍 Drop-off Location</label>
         <input type="text" name="dropoff" placeholder="Enter your destination" required>
 
-        <!-- NUMBER OF PASSENGERS - affects fare calculation -->
         <label>👥 Number of Passengers</label>
         <select name="passengers" id="passengers" onchange="updateFare()" required>
             <option value="1">1 Passenger - ₱40</option>
@@ -22,8 +45,7 @@
             <option value="4">4 Passengers - ₱160</option>
         </select>
 
-        <!-- FARE DISPLAY - shows calculated price -->
-        <!-- FARE FORMULA: ₱40 × number of passengers -->
+        <!-- FARE DISPLAY -->
         <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin: 15px 0;">
             <strong>💰 Fare: ₱<span id="fare_amount">40</span></strong>
             <small style="display: block; margin-top: 5px;">Base fare: ₱40 per passenger</small>
@@ -36,24 +58,35 @@
 </div>
 
 <script>
-    # FUNCTION: update fare when passenger count changes
-    # FARE CALCULATION: passengers × 40 pesos
     function updateFare() {
         var passengers = document.getElementById('passengers').value;
         var fare = passengers * 40;
         document.getElementById('fare_amount').innerText = fare;
     }
 
-    # FUNCTION: calculate and submit fare with form
     function calculateFare() {
         var passengers = document.getElementById('passengers').value;
         var fare = passengers * 40;
-        # Create hidden field to submit fare to backend
         var hiddenInput = document.createElement('input');
         hiddenInput.type = 'hidden';
         hiddenInput.name = 'fare';
         hiddenInput.value = fare;
+        
+        // Combine pickup barangay with details
+        var pickup = document.getElementById('pickup').value;
+        var pickupDetails = document.getElementById('pickup_details').value;
+        var fullPickup = pickup;
+        if (pickupDetails) {
+            fullPickup = pickup + " - " + pickupDetails;
+        }
+        
+        var fullPickupInput = document.createElement('input');
+        fullPickupInput.type = 'hidden';
+        fullPickupInput.name = 'pickup';
+        fullPickupInput.value = fullPickup;
+        
         document.forms[0].appendChild(hiddenInput);
+        document.forms[0].appendChild(fullPickupInput);
         return true;
     }
 </script>
