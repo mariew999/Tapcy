@@ -191,6 +191,11 @@ def passenger_dashboard():
         return redirect(url_for('views.passenger_login'))
 
     db = get_db()
+    
+    # Get passenger details including total_bookings
+    passenger_data = db.execute("SELECT * FROM passengers WHERE phone = ?", 
+                                (session['passenger']['phone'],)).fetchone()
+    
     bookings = db.execute("SELECT * FROM bookings WHERE passenger_phone = ? ORDER BY id DESC", 
                          (session['passenger']['phone'],)).fetchall()
     available_drivers = db.execute("SELECT * FROM drivers WHERE status = 'available'").fetchall()
@@ -204,9 +209,17 @@ def passenger_dashboard():
             'login_time': rider['login_time']
         })
 
+    # Create passenger dict with total_bookings
+    passenger_info = {
+        'name': session['passenger']['name'],
+        'phone': session['passenger']['phone'],
+        'email': session['passenger']['email'],
+        'total_bookings': passenger_data['total_bookings'] if passenger_data else 0
+    }
+
     return render_template("passenger_dashboard.html",
                            active_tab='passenger',
-                           passenger=session['passenger'],
+                           passenger=passenger_info,
                            bookings=bookings,
                            active_riders=active_riders_list,
                            active_riders_count=len(active_riders),
