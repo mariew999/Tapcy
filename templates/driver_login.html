@@ -6,13 +6,11 @@
     <h1>Tapcy Driver</h1>
     <p style="color: #ff9bcb; font-size: 18px; margin: 15px 0;">Drive and earn with every trip!</p>
 
-    <!-- BUTTONS for switching between Login and Register -->
     <div style="margin-bottom: 20px;">
         <button onclick="showLogin()" id="loginBtn" class="btn" style="background: purple; margin-right: 10px;">Login</button>
         <button onclick="showRegister()" id="registerBtn" class="btn" style="background: gray;">Register</button>
     </div>
     
-    <!-- DRIVER LOGIN FORM -->
     <div id="loginForm">
         <h3>Login to Drive</h3>
         <form method="POST" action="{{ url_for('views.driver_login') }}">
@@ -22,19 +20,14 @@
         </form>
     </div>
     
-    <!-- DRIVER REGISTRATION FORM -->
     <div id="registerForm" style="display: none;">
         <h3>Register as Driver</h3>
-        <form method="POST" action="{{ url_for('views.driver_register') }}" onsubmit="return validateForm()" novalidate>
+        <form method="POST" action="{{ url_for('views.driver_register') }}" onsubmit="return validateForm()">
             <input type="text" name="name" placeholder="Full Name" required>
-            <!-- PHONE VALIDATION: 11 digits -->
             <input type="text" name="phone" placeholder="Phone Number (11 digits)" required>
-            <!-- EMAIL VALIDATION: must contain @ -->
             <input type="email" name="email" placeholder="Email" required>
-            <!-- PASSWORD: minimum 8 chars -->
             <input type="password" name="password" placeholder="Password (min 8 chars)" required>
             <input type="password" name="confirm" placeholder="Confirm Password" required>
-            <!-- TRICYCLE NUMBER - unique identifier for each driver -->
             <input type="text" name="tricycle" placeholder="Tricycle Number" required>
             <button type="submit">Register</button>
         </form>
@@ -42,7 +35,6 @@
 
     <hr>
 
-    <!-- HOW IT WORKS FOR DRIVERS -->
     <div style="text-align: left;">
         <h3 style="color: #ff69b4;">🌸 How it works:</h3>
         <ul style="margin-top: 15px; list-style: none; padding: 0;">
@@ -63,7 +55,7 @@
 </div>
 
 <script>
-    # FUNCTION: toggle between login and register forms
+    // FUNCTION: showLogin - shows login form, hides register form
     function showLogin() {
         document.getElementById('loginForm').style.display = 'block';
         document.getElementById('registerForm').style.display = 'none';
@@ -71,6 +63,7 @@
         document.getElementById('registerBtn').style.background = 'gray';
     }
 
+    // FUNCTION: showRegister - shows register form, hides login form
     function showRegister() {
         document.getElementById('loginForm').style.display = 'none';
         document.getElementById('registerForm').style.display = 'block';
@@ -78,32 +71,30 @@
         document.getElementById('registerBtn').style.background = 'purple';
     }
 
-    # FUNCTION: validate driver registration form
+    // FUNCTION: validateForm - validates driver registration
     function validateForm() {
+        // PHONE VALIDATION: exactly 11 digits
         var phone = document.querySelector('input[name="phone"]').value;
+        // EMAIL VALIDATION: must contain @
         var email = document.querySelector('input[name="email"]').value;
         var password = document.querySelector('input[name="password"]').value;
         var confirm = document.querySelector('input[name="confirm"]').value;
 
-        # PHONE: exactly 11 digits
         if (!/^\d{11}$/.test(phone)) {
             alert('Phone number must be exactly 11 digits');
             return false;
         }
 
-        # EMAIL: must contain @
         if (!email.includes('@')) {
             alert('Email must contain @ symbol');
             return false;
         }
 
-        # PASSWORD: minimum 8 characters
         if (password.length < 8) {
             alert('Password must be at least 8 characters');
             return false;
         }
 
-        # PASSWORD CONFIRMATION
         if (password !== confirm) {
             alert('Passwords do not match');
             return false;
@@ -112,7 +103,7 @@
         return true;
     }
 
-    # AUTO-SHOW REGISTER if URL has ?tab=register
+    // Auto-show register form if URL has ?tab=register
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('tab') === 'register') {
