@@ -5,6 +5,7 @@
     <h2>Book a Ride</h2>
     <p>Hi <strong>{{ passenger.name }}</strong>! Where are you going?</p>
 
+    <!-- BOOKING FORM - where passengers create new rides -->
     <form method="POST" action="{{ url_for('views.book_ride') }}" onsubmit="return calculateFare()">
         <label>📍 Pick-up Location</label>
         <input type="text" name="pickup" placeholder="Enter your current location" required>
@@ -12,6 +13,7 @@
         <label>📍 Drop-off Location</label>
         <input type="text" name="dropoff" placeholder="Enter your destination" required>
 
+        <!-- NUMBER OF PASSENGERS - affects fare calculation -->
         <label>👥 Number of Passengers</label>
         <select name="passengers" id="passengers" onchange="updateFare()" required>
             <option value="1">1 Passenger - ₱40</option>
@@ -20,6 +22,8 @@
             <option value="4">4 Passengers - ₱160</option>
         </select>
 
+        <!-- FARE DISPLAY - shows calculated price -->
+        <!-- FARE FORMULA: ₱40 × number of passengers -->
         <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin: 15px 0;">
             <strong>💰 Fare: ₱<span id="fare_amount">40</span></strong>
             <small style="display: block; margin-top: 5px;">Base fare: ₱40 per passenger</small>
@@ -32,16 +36,19 @@
 </div>
 
 <script>
+    # FUNCTION: update fare when passenger count changes
+    # FARE CALCULATION: passengers × 40 pesos
     function updateFare() {
         var passengers = document.getElementById('passengers').value;
         var fare = passengers * 40;
         document.getElementById('fare_amount').innerText = fare;
     }
 
+    # FUNCTION: calculate and submit fare with form
     function calculateFare() {
         var passengers = document.getElementById('passengers').value;
         var fare = passengers * 40;
-        // Add hidden field to submit fare
+        # Create hidden field to submit fare to backend
         var hiddenInput = document.createElement('input');
         hiddenInput.type = 'hidden';
         hiddenInput.name = 'fare';
