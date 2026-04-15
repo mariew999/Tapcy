@@ -1,49 +1,72 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Tapcy</title>
-    <style>
-        body {
-            font-family: Arial;
-            background-color: #f4f4f4;
-            text-align: center;
-            padding-top: 100px;
-        }
-        .container {
-            background: white;
-            width: 400px;
-            margin: auto;
-            padding: 30px;
-            border-radius: 10px;
-        }
-        button {
-            padding: 10px 30px;
-            margin: 10px;
-            background-color: purple;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .message {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-        }
-        .success { background: #d4edda; color: #155724; }
-        .error { background: #f8d7da; color: #721c24; }
-    </style>
-</head>
-<body>
-<div class="container">
-    <h1>Tapcy</h1>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="message {{ category }}">{{ message }}</div>
-        {% endfor %}
-    {% endwith %}
-    <a href="{{ url_for('views.login') }}"><button>Login</button></a>
-    <a href="{{ url_for('views.register') }}"><button>Register</button></a>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero" style="text-align: center; padding: 60px 20px;">
+    <div class="emoji" style="font-size: 80px;">🚕🌸</div>
+    <h1 style="font-size: 48px; color: purple; margin: 20px 0;">Welcome to Tapcy</h1>
+    <p style="font-size: 20px; color: #666; margin-bottom: 40px;">Your trusted tricycle booking service in the Philippines</p>
+    
+    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('views.passenger_login') }}" class="btn" style="font-size: 18px; padding: 15px 30px; background: purple;">
+            🚶‍♀️ I'm a Passenger
+        </a>
+        <a href="{{ url_for('views.driver_login') }}" class="btn" style="font-size: 18px; padding: 15px 30px; background: #ff9800;">
+            🚗 I'm a Driver
+        </a>
+        <a href="{{ url_for('views.admin_dashboard') }}" class="btn" style="font-size: 18px; padding: 15px 30px; background: #4caf50;">
+            👑 Admin
+        </a>
+    </div>
 </div>
-</body>
-</html>
+
+<hr style="margin: 40px 0;">
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin: 40px 0;">
+    <div style="text-align: center; padding: 20px;">
+        <div style="font-size: 40px;">📍</div>
+        <h3>Easy Booking</h3>
+        <p>Book a tricycle in seconds with just a few taps</p>
+    </div>
+    <div style="text-align: center; padding: 20px;">
+        <div style="font-size: 40px;">💰</div>
+        <h3>Fixed Fares</h3>
+        <p>No surprises - ₱40 per passenger, always</p>
+    </div>
+    <div style="text-align: center; padding: 20px;">
+        <div style="font-size: 40px;">🚗</div>
+        <h3>Local Drivers</h3>
+        <p>Trusted tricycle drivers in your neighborhood</p>
+    </div>
+    <div style="text-align: center; padding: 20px;">
+        <div style="font-size: 40px;">🌸</div>
+        <h3>Safe & Reliable</h3>
+        <p>Your safety is our priority</p>
+    </div>
+</div>
+
+<div style="background: #fff5f8; padding: 40px; border-radius: 20px; text-align: center; margin: 40px 0;">
+    <h2 style="color: purple;">How Tapcy Works</h2>
+    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 30px; margin-top: 30px;">
+        <div>
+            <div style="background: purple; color: white; width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">1</div>
+            <p><strong>Register/Login</strong><br>Create your account</p>
+        </div>
+        <div>
+            <div style="background: purple; color: white; width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">2</div>
+            <p><strong>Book a Ride</strong><br>Enter pickup & dropoff</p>
+        </div>
+        <div>
+            <div style="background: purple; color: white; width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">3</div>
+            <p><strong>Get Matched</strong><br>Nearby driver accepts</p>
+        </div>
+        <div>
+            <div style="background: purple; color: white; width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">4</div>
+            <p><strong>Enjoy Your Ride</strong><br>Pay when you arrive</p>
+        </div>
+    </div>
+</div>
+
+<footer style="text-align: center; padding: 30px; color: #999;">
+    <p>© 2024 Tapcy - Your Everyday Tricycle Companion</p>
+</footer>
+{% endblock %}
