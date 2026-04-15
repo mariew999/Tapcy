@@ -62,38 +62,43 @@
     }
 
     function validateForm() {
-        var phone = document.getElementById('phone').value;
-        var email = document.getElementById('email').value;
-        var password = document.getElementById('password').value;
-        var confirm = document.getElementById('confirm').value;
-        var tricycle = document.getElementById('tricycle').value;
-
-        if (!/^\d{11}$/.test(phone)) {
-            alert('Phone number must be exactly 11 digits');
-            return false;
-        }
-
-        if (!email.includes('@')) {
-            alert('Email must contain @ symbol');
-            return false;
-        }
-
-        if (password.length < 8) {
-            alert('Password must be at least 8 characters');
-            return false;
-        }
-
-        if (password !== confirm) {
-            alert('Passwords do not match');
-            return false;
-        }
-
-        if (tricycle.trim() === '') {
-            alert('Please enter tricycle number');
-            return false;
-        }
-
-        return true;
+    var phone = document.getElementById('phone').value.trim();
+    var email = document.getElementById('email').value.trim();  // .trim() removes hidden spaces
+    var password = document.getElementById('password').value;
+    var confirm = document.getElementById('confirm').value;
+    var tricycle = document.getElementById('tricycle').value.trim();
+    
+    if (!/^\d{11}$/.test(phone)) {
+        alert('Phone number must be exactly 11 digits');
+        return false;
+    }
+    if (email.indexOf('@') === -1 || email.indexOf('.') === -1) {
+        alert('Please enter a valid email address (must contain @ and .)');
+        return false;
+    }
+    
+    if (email === '') {
+        alert('Email is required');
+        return false;
+    }
+    
+    if (password.length < 8) {
+        alert('Password must be at least 8 characters');
+        return false;
+    }
+    
+    if (password !== confirm) {
+        alert('Passwords do not match');
+        return false;
+    }
+    
+    if (tricycle === '') {
+        alert('Please enter tricycle number');
+        return false;
+    }
+    
+    return true;
+}
     }
 </script>
 {% endblock %}
