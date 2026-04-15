@@ -4,6 +4,7 @@
 <div class="card">
     <h1>🚕 Tapcy Admin Dashboard</h1>
     
+    <!-- ADMIN STATS CARDS - overview counts -->
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-number">{{ total_passengers }}</div>
@@ -23,6 +24,7 @@
         </div>
     </div>
 
+    <!-- ALL BOOKINGS TABLE - admin can see all rides -->
     <h2>📋 Recent Bookings</h2>
     {% if bookings %}
         <table>
@@ -53,6 +55,7 @@
         <p>No bookings yet.</p>
     {% endif %}
 
+    <!-- ALL PASSENGERS LIST -->
     <h2>👥 Passengers</h2>
     {% if passengers %}
         <table>
@@ -79,6 +82,7 @@
         <p>No passengers yet.</p>
     {% endif %}
 
+    <!-- ALL DRIVERS LIST with earnings -->
     <h2>🚗 Drivers</h2>
     {% if drivers %}
         <table>
