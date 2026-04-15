@@ -89,13 +89,16 @@ init_db()
 active_riders = {}
 active_drivers = {}
 
-# ============= HOME PAGE =============
+# ============= HOME PAGE (UPDATED - NOW SHOWS INDEX.HTML) =============
 @views.route("/")
 def home():
+    # If passenger is logged in, send to their dashboard
     if 'passenger' in session:
         return redirect(url_for('views.passenger_dashboard'))
+    # If driver is logged in, send to their dashboard
     if 'driver' in session:
         return redirect(url_for('views.driver_dashboard'))
+    # If no one is logged in, show the homepage (index.html)
     return render_template("index.html")
 
 # ============= PASSENGER SECTION =============
