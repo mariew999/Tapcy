@@ -196,6 +196,10 @@ def passenger_dashboard():
     passenger_data = db.execute("SELECT * FROM passengers WHERE phone = ?", 
                                 (session['passenger']['phone'],)).fetchone()
     
+    # COUNT completed bookings directly from bookings table
+    completed_count = db.execute("SELECT COUNT(*) as count FROM bookings WHERE passenger_phone = ? AND status = 'completed'",
+                                 (session['passenger']['phone'],)).fetchone()
+    
     bookings = db.execute("SELECT * FROM bookings WHERE passenger_phone = ? ORDER BY id DESC", 
                          (session['passenger']['phone'],)).fetchall()
     available_drivers = db.execute("SELECT * FROM drivers WHERE status = 'available'").fetchall()
@@ -209,12 +213,12 @@ def passenger_dashboard():
             'login_time': rider['login_time']
         })
 
-    # Create passenger dict with total_bookings
+    # Use completed_count instead of total_bookings from passengers table
     passenger_info = {
         'name': session['passenger']['name'],
         'phone': session['passenger']['phone'],
         'email': session['passenger']['email'],
-        'total_bookings': passenger_data['total_bookings'] if passenger_data else 0
+        'total_bookings': completed_count['count'] if completed_count else 0
     }
 
     return render_template("passenger_dashboard.html",
@@ -246,8 +250,7 @@ def book_ride():
                             get_local_time().strftime("%Y-%m-%d")))
         booking_id = cursor.lastrowid
         
-        db.execute("UPDATE passengers SET total_bookings = total_bookings + 1 WHERE phone = ?", 
-                  (session['passenger']['phone'],))
+        # Don't increment total_bookings here - count completed rides instead
         
         available_drivers = db.execute("SELECT * FROM drivers WHERE status = 'available'").fetchall()
         
@@ -407,7 +410,7 @@ def accept_booking(booking_id):
 
     db = get_db()
     
-    # Check if driver is online/available
+    # Check if driver is online
     driver = db.execute("SELECT status FROM drivers WHERE email = ?", (session['driver']['email'],)).fetchone()
     
     if driver is None:
@@ -415,7 +418,6 @@ def accept_booking(booking_id):
         flash("Driver account not found", "error")
         return redirect(url_for('views.driver_logout'))
     
-    # IMPORTANT: Check if driver is online
     if driver['status'] != 'available':
         db.close()
         flash("🔴 You are OFFLINE. Please go online first to accept bookings.", "error")
@@ -428,7 +430,6 @@ def accept_booking(booking_id):
         flash("This booking is no longer available.", "error")
         return redirect(url_for('views.driver_dashboard'))
     
-    # Accept the booking
     db.execute("UPDATE bookings SET status = 'accepted', driver = ? WHERE id = ? AND status = 'pending'",
               (session['driver']['name'], booking_id))
     db.execute("UPDATE drivers SET total_rides = total_rides + 1 WHERE email = ?",
@@ -448,17 +449,9 @@ def complete_ride(booking_id):
     booking = db.execute("SELECT fare, passenger_phone FROM bookings WHERE id = ?", (booking_id,)).fetchone()
     
     if booking:
-        # Update booking status
         db.execute("UPDATE bookings SET status = 'completed' WHERE id = ?", (booking_id,))
-        
-        # Update driver earnings
         db.execute("UPDATE drivers SET earnings = earnings + ? WHERE email = ?",
                   (booking['fare'], session['driver']['email']))
-        
-        # FIX: Update passenger's total_bookings (increment by 1 for completed ride)
-        db.execute("UPDATE passengers SET total_bookings = total_bookings + 1 WHERE phone = ?",
-                  (booking['passenger_phone'],))
-        
         db.commit()
         flash(f"🎉 Ride completed! Earned ₱{booking['fare']}", "success")
     
@@ -474,29 +467,22 @@ def toggle_driver_status():
     db = get_db()
     driver_email = session['driver']['email']
     
-    # Get driver from database
     driver = db.execute("SELECT status FROM drivers WHERE email = ?", (driver_email,)).fetchone()
     
-    # Check if driver exists - THIS PREVENTS THE TypeError
     if driver is None:
         db.close()
         flash("Driver account not found. Please register again.", "error")
         return redirect(url_for('views.driver_logout'))
     
-    # Now safe to access driver['status']
     if driver['status'] == 'available':
-        # Go offline
         db.execute("UPDATE drivers SET status = 'offline' WHERE email = ?", (driver_email,))
         db.commit()
-        # Remove from active_drivers if exists
         if driver_email in active_drivers:
             active_drivers.pop(driver_email, None)
         flash("🟡 Status: OFFLINE - You will not receive bookings", "info")
     else:
-        # Go online
         db.execute("UPDATE drivers SET status = 'available' WHERE email = ?", (driver_email,))
         db.commit()
-        # Add to active_drivers
         active_drivers[driver_email] = {
             'name': session['driver']['name'],
             'login_time': get_local_time().strftime("%H:%M"),
