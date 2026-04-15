@@ -22,10 +22,11 @@
     
     <div id="registerForm" style="display: none;">
         <h3>Register as Driver</h3>
-        <form method="POST" action="{{ url_for('views.driver_register') }}" onsubmit="return validateForm()">
+        <!-- REMOVED onsubmit validation temporarily -->
+        <form method="POST" action="{{ url_for('views.driver_register') }}" id="registerFormSubmit">
             <input type="text" name="name" placeholder="Full Name" required>
             <input type="text" name="phone" placeholder="Phone Number (11 digits)" required>
-            <input type="email" name="email" placeholder="Email" required>
+            <input type="text" name="email" id="driverEmail" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password (min 8 chars)" required>
             <input type="password" name="confirm" placeholder="Confirm Password" required>
             <input type="text" name="tricycle" placeholder="Tricycle Number" required>
@@ -55,7 +56,6 @@
 </div>
 
 <script>
-    // FUNCTION: showLogin - shows login form, hides register form
     function showLogin() {
         document.getElementById('loginForm').style.display = 'block';
         document.getElementById('registerForm').style.display = 'none';
@@ -63,7 +63,6 @@
         document.getElementById('registerBtn').style.background = 'gray';
     }
 
-    // FUNCTION: showRegister - shows register form, hides login form
     function showRegister() {
         document.getElementById('loginForm').style.display = 'none';
         document.getElementById('registerForm').style.display = 'block';
@@ -71,39 +70,6 @@
         document.getElementById('registerBtn').style.background = 'purple';
     }
 
-    // FUNCTION: validateForm - validates driver registration
-    function validateForm() {
-        // PHONE VALIDATION: exactly 11 digits
-        var phone = document.querySelector('input[name="phone"]').value;
-        // EMAIL VALIDATION: must contain @
-        var email = document.querySelector('input[name="email"]').value;
-        var password = document.querySelector('input[name="password"]').value;
-        var confirm = document.querySelector('input[name="confirm"]').value;
-
-        if (!/^\d{11}$/.test(phone)) {
-            alert('Phone number must be exactly 11 digits');
-            return false;
-        }
-
-        if (!email.includes('@')) {
-            alert('Email must contain @ symbol');
-            return false;
-        }
-
-        if (password.length < 8) {
-            alert('Password must be at least 8 characters');
-            return false;
-        }
-
-        if (password !== confirm) {
-            alert('Passwords do not match');
-            return false;
-        }
-
-        return true;
-    }
-
-    // Auto-show register form if URL has ?tab=register
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('tab') === 'register') {
