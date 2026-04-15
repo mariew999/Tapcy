@@ -13,7 +13,7 @@
             <!-- PICKUP LOCATION -->
             <div class="form-group">
                 <label class="form-label">📍 Pick-up Barangay</label>
-                <select name="pickup" id="pickup" class="form-select" required>
+                <select name="pickup_barangay" id="pickup_barangay" class="form-select" required>
                     <option value="">-- Select Pickup Barangay --</option>
                     <option value="Magassi">Magassi</option>
                     <option value="Balasig">Balasig</option>
@@ -31,18 +31,18 @@
                 </select>
             </div>
 
-            <!-- PUROK / DETAILS (Optional) -->
+            <!-- PICKUP DETAILS (Optional) -->
             <div class="form-group">
-                <label class="form-label">📍 Specific Purok / Landmark (Optional)</label>
+                <label class="form-label">📍 Pickup Specifics (Optional)</label>
                 <input type="text" name="pickup_details" id="pickup_details" class="form-input" 
                        placeholder="e.g., Purok 6, near church, beside school">
                 <small class="input-hint">Adding details helps the driver find you faster.</small>
             </div>
 
-            <!-- DROPOFF LOCATION (NOW A DROPDOWN) -->
+            <!-- DROPOFF LOCATION -->
             <div class="form-group">
                 <label class="form-label">🏁 Drop-off Barangay</label>
-                <select name="dropoff" id="dropoff" class="form-select" required>
+                <select name="dropoff_barangay" id="dropoff_barangay" class="form-select" required>
                     <option value="">-- Select Drop-off Barangay --</option>
                     <option value="Magassi">Magassi</option>
                     <option value="Balasig">Balasig</option>
@@ -60,7 +60,15 @@
                 </select>
             </div>
 
-            <!-- PASSENGERS & FARE -->
+            <!-- DROPOFF DETAILS (Optional) -->
+            <div class="form-group">
+                <label class="form-label">🏁 Drop-off Specifics (Optional)</label>
+                <input type="text" name="dropoff_details" id="dropoff_details" class="form-input" 
+                       placeholder="e.g., Purok 3, near plaza, house number">
+                <small class="input-hint">Adding details helps the driver know exactly where to drop you.</small>
+            </div>
+
+            <!-- NUMBER OF PASSENGERS -->
             <div class="form-group">
                 <label class="form-label">👥 Number of Passengers</label>
                 <select name="passengers" id="passengers" class="form-select" onchange="updateFare()" required>
@@ -227,16 +235,23 @@
     }
 
     function prepareSubmit() {
-        let pickup = document.getElementById('pickup').value;
+        let pickupBarangay = document.getElementById('pickup_barangay').value;
         let pickupDetails = document.getElementById('pickup_details').value;
-        let dropoff = document.getElementById('dropoff').value;
+        let dropoffBarangay = document.getElementById('dropoff_barangay').value;
+        let dropoffDetails = document.getElementById('dropoff_details').value;
         let passengers = document.getElementById('passengers').value;
         let fare = passengers * 40;
 
-        // Combine pickup with details if provided
-        let fullPickup = pickup;
+        // Combine pickup barangay with details
+        let fullPickup = pickupBarangay;
         if (pickupDetails.trim() !== "") {
-            fullPickup = pickup + " - " + pickupDetails;
+            fullPickup = pickupBarangay + " - " + pickupDetails;
+        }
+
+        // Combine dropoff barangay with details
+        let fullDropoff = dropoffBarangay;
+        if (dropoffDetails.trim() !== "") {
+            fullDropoff = dropoffBarangay + " - " + dropoffDetails;
         }
 
         // Create hidden inputs for the actual form submission
@@ -248,7 +263,7 @@
         let hiddenDropoff = document.createElement('input');
         hiddenDropoff.type = 'hidden';
         hiddenDropoff.name = 'dropoff';
-        hiddenDropoff.value = dropoff;
+        hiddenDropoff.value = fullDropoff;
 
         let hiddenPassengers = document.createElement('input');
         hiddenPassengers.type = 'hidden';
