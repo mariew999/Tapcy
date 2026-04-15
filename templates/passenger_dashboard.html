@@ -6,44 +6,34 @@
         <div>
             <div class="emoji">🌸</div>
             <h2>Welcome back, {{ passenger.name }}! 💕</h2>
-            <p style="color: #ff9bcb;">✨ You are logged in as a passenger ✨</p>
+            <p style="color: #ff9bcb;">✨ Ready for a ride? ✨</p>
         </div>
         <div>
-            <!-- BOOK NEW RIDE BUTTON -->
             <a href="{{ url_for('views.book_ride') }}" class="btn">✨ Book New Ride 🚕</a>
             <a href="{{ url_for('views.passenger_logout') }}" class="btn" style="background: #ffb6c1;">🌸 Logout</a>
         </div>
     </div>
 
-    <!-- STATS SECTION - shows online counts -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
-        <div style="background: linear-gradient(135deg, #ff69b4, #ff9bcb); padding: 15px; border-radius: 15px; text-align: center; color: white;">
-            <div style="font-size: 30px;">👥</div>
-            <div><strong>{{ active_riders_count }}</strong> Passengers Online</div>
+    <!-- TWO STATS CARDS -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0;">
+        <!-- CARD 1: Available Drivers -->
+        <div style="background: linear-gradient(135deg, #4caf50, #81c784); padding: 20px; border-radius: 15px; text-align: center; color: white;">
+            <div style="font-size: 40px;">🚗</div>
+            <div style="font-size: 28px; font-weight: bold; margin: 10px 0;">{{ available_drivers_count }}</div>
+            <div style="font-size: 14px;">Drivers Available Now</div>
+            <small style="font-size: 11px; opacity: 0.8;">Ready to pick you up</small>
         </div>
-        <div style="background: linear-gradient(135deg, #4caf50, #81c784); padding: 15px; border-radius: 15px; text-align: center; color: white;">
-            <div style="font-size: 30px;">🚗</div>
-            <div><strong>{{ available_drivers_count }}</strong> Drivers Available</div>
+
+        <!-- CARD 2: Total Rides -->
+        <div style="background: linear-gradient(135deg, #ff9800, #ffb74d); padding: 20px; border-radius: 15px; text-align: center; color: white;">
+            <div style="font-size: 40px;">📋</div>
+            <div style="font-size: 28px; font-weight: bold; margin: 10px 0;">{{ passenger.total_bookings }}</div>
+            <div style="font-size: 14px;">Total Rides Taken</div>
+            <small style="font-size: 11px; opacity: 0.8;">Your ride history</small>
         </div>
     </div>
 
-    <!-- ACTIVE PASSENGERS LIST -->
-    {% if active_riders %}
-    <div style="background: #fff5f8; padding: 15px; border-radius: 15px; margin: 15px 0;">
-        <h4 style="color: #ff69b4;">👥 Active Passengers (Auto-Logged In)</h4>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-            {% for rider in active_riders %}
-            <span style="background: white; padding: 5px 15px; border-radius: 20px; color: #ff69b4;">
-                🌸 {{ rider.name }}
-                <small style="color: #999;">(since {{ rider.login_time }})</small>
-            </span>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- BOOKINGS HISTORY TABLE - shows all passenger's rides -->
-    <h3>📋 My Bookings</h3>
+    <h3>📋 My Recent Bookings</h3>
     {% if bookings %}
     <div style="overflow-x: auto;">
          <table style="width: 100%; border-collapse: collapse;">
@@ -57,7 +47,7 @@
                     <th style="padding: 10px;">Status</th>
                     <th style="padding: 10px;">Driver</th>
                     <th style="padding: 10px;"></th>
-                  </tr>
+                </tr>
             </thead>
             <tbody>
                 {% for b in bookings %}
@@ -72,7 +62,6 @@
                     </td>
                     <td style="padding: 10px;">{{ b.driver or '🌸 Waiting...' }}</td>
                     <td style="padding: 10px;">
-                        <!-- CANCEL BOOKING - only available for pending rides -->
                         {% if b.status == 'pending' %}
                         <a href="{{ url_for('views.cancel_booking', booking_id=b.id) }}" style="color: #ffb6c1;" onclick="return confirm('Cancel this booking? 💔')">Cancel</a>
                         {% endif %}
