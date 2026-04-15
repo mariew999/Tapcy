@@ -89,12 +89,14 @@ init_db()
 active_riders = {}
 active_drivers = {}
 
-# ============= HOME =============
+# ============= HOME PAGE (UPDATED) =============
 @views.route("/")
 def home():
     if 'passenger' in session:
         return redirect(url_for('views.passenger_dashboard'))
-    return redirect(url_for('views.passenger_login'))
+    if 'driver' in session:
+        return redirect(url_for('views.driver_dashboard'))
+    return render_template("index.html")
 
 # ============= PASSENGER SECTION =============
 @views.route("/passenger_login", methods=["GET", "POST"])
