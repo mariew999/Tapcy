@@ -442,40 +442,37 @@ def toggle_driver_status():
     db = get_db()
     driver_email = session['driver']['email']
     
-    try:
-        driver = db.execute("SELECT status FROM drivers WHERE email = ?", (driver_email,)).fetchone()
-        
-        if driver is None:
-            flash("Driver not found", "error")
-            db.close()
-            return redirect(url_for('views.driver_dashboard'))
-        
-        if driver['status'] == 'available':
-            # Go offline
-            db.execute("UPDATE drivers SET status = 'offline' WHERE email = ?", (driver_email,))
-            db.commit()
-            # Remove from active_drivers if exists
-            if driver_email in active_drivers:
-                active_drivers.pop(driver_email, None)
-            flash("🟡 Status: OFFLINE - You will not receive bookings", "info")
-        else:
-            # Go online
-            db.execute("UPDATE drivers SET status = 'available' WHERE email = ?", (driver_email,))
-            db.commit()
-            # Add to active_drivers
-            active_drivers[driver_email] = {
-                'name': session['driver']['name'],
-                'login_time': get_local_time().strftime("%H:%M"),
-                'status': 'online'
-            }
-            flash("🟢 Status: ONLINE - You will receive bookings", "success")
-        
-        db.close()
-        
-    except Exception as e:
-        db.close()
-        flash(f"An error occurred: {str(e)}", "error")
+    # Get driver from database
+    driver = db.execute("SELECT status FROM drivers WHERE email = ?", (driver_email,)).fetchone()
     
+    # Check if driver exists - THIS PREVENTS THE TypeError
+    if driver is None:
+        db.close()
+        flash("Driver account not found. Please register again.", "error")
+        return redirect(url_for('views.driver_logout'))
+    
+    # Now safe to access driver['status']
+    if driver['status'] == 'available':
+        # Go offline
+        db.execute("UPDATE drivers SET status = 'offline' WHERE email = ?", (driver_email,))
+        db.commit()
+        # Remove from active_drivers if exists
+        if driver_email in active_drivers:
+            active_drivers.pop(driver_email, None)
+        flash("🟡 Status: OFFLINE - You will not receive bookings", "info")
+    else:
+        # Go online
+        db.execute("UPDATE drivers SET status = 'available' WHERE email = ?", (driver_email,))
+        db.commit()
+        # Add to active_drivers
+        active_drivers[driver_email] = {
+            'name': session['driver']['name'],
+            'login_time': get_local_time().strftime("%H:%M"),
+            'status': 'online'
+        }
+        flash("🟢 Status: ONLINE - You will receive bookings", "success")
+    
+    db.close()
     return redirect(url_for('views.driver_dashboard'))
 
 @views.route("/driver_logout")
