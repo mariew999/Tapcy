@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Tapcy</title>
+    <!-- GLOBAL STYLES - applies to all pages -->
     <style>
         * {
             margin: 0;
@@ -14,6 +15,7 @@
             background-color: #f4f4f4;
         }
 
+        /* NAVIGATION TABS - Passenger, Driver, Admin links */
         .tabs {
             background: #2c1e3a;
             padding: 15px;
@@ -32,12 +34,14 @@
             background: #ff9800;
         }
 
+        /* MAIN CONTAINER */
         .container {
             max-width: 1200px;
             margin: 30px auto;
             padding: 20px;
         }
 
+        /* CARD STYLE - white background with shadow */
         .card {
             background: white;
             padding: 30px;
@@ -45,6 +49,7 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
+        /* BUTTON STYLES */
         .btn, button {
             background: purple;
             color: white;
@@ -56,6 +61,7 @@
             display: inline-block;
         }
 
+        /* FORM INPUTS */
         input, select {
             width: 100%;
             padding: 10px;
@@ -64,6 +70,7 @@
             border-radius: 5px;
         }
 
+        /* FLASH MESSAGES - success, error, info */
         .message {
             padding: 10px;
             margin: 10px 0;
@@ -85,6 +92,7 @@
             color: #0c5460;
         }
 
+        /* TABLES - for displaying data */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -102,6 +110,7 @@
             color: white;
         }
 
+        /* STATS GRID - for admin dashboard */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -133,6 +142,7 @@
 </head>
 <body>
 
+<!-- GLOBAL NAVIGATION BAR - appears on all pages -->
 <div class="tabs">
     <a href="{{ url_for('views.passenger_login') }}" {% if active_tab == 'passenger' %}class="active"{% endif %}>Passenger</a>
     <a href="{{ url_for('views.driver_login') }}" {% if active_tab == 'driver' %}class="active"{% endif %}>Driver</a>
@@ -140,6 +150,7 @@
 </div>
 
 <div class="container">
+    <!-- FLASH MESSAGES DISPLAY - shows success/error messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% for category, message in messages %}
             <div class="message {{ category }}">{{ message }}</div>
