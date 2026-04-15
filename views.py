@@ -402,9 +402,33 @@ def driver_dashboard():
 @views.route("/accept_booking/<int:booking_id>")
 def accept_booking(booking_id):
     if 'driver' not in session:
+        flash("Please login first", "error")
         return redirect(url_for('views.driver_login'))
 
     db = get_db()
+    
+    # Check if driver is online/available
+    driver = db.execute("SELECT status FROM drivers WHERE email = ?", (session['driver']['email'],)).fetchone()
+    
+    if driver is None:
+        db.close()
+        flash("Driver account not found", "error")
+        return redirect(url_for('views.driver_logout'))
+    
+    # IMPORTANT: Check if driver is online
+    if driver['status'] != 'available':
+        db.close()
+        flash("🔴 You are OFFLINE. Please go online first to accept bookings.", "error")
+        return redirect(url_for('views.driver_dashboard'))
+    
+    # Check if booking is still pending
+    booking = db.execute("SELECT status FROM bookings WHERE id = ?", (booking_id,)).fetchone()
+    if booking and booking['status'] != 'pending':
+        db.close()
+        flash("This booking is no longer available.", "error")
+        return redirect(url_for('views.driver_dashboard'))
+    
+    # Accept the booking
     db.execute("UPDATE bookings SET status = 'accepted', driver = ? WHERE id = ? AND status = 'pending'",
               (session['driver']['name'], booking_id))
     db.execute("UPDATE drivers SET total_rides = total_rides + 1 WHERE email = ?",
