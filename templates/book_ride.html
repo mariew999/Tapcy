@@ -1,92 +1,271 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="card">
-    <h2>Book a Ride</h2>
-    <p>Hi <strong>{{ passenger.name }}</strong>! Where are you going?</p>
-
-    <form method="POST" action="{{ url_for('views.book_ride') }}" onsubmit="return calculateFare()">
-        
-        <!-- PICKUP LOCATION - DROPDOWN with Cabagan Barangays -->
-        <label>📍 Pick-up Location (Barangay)</label>
-        <select name="pickup" id="pickup" required>
-            <option value="">-- Select Barangay --</option>
-            <option value="Magassi">Magassi</option>
-            <option value="Balasig">Balasig</option>
-            <option value="Cansan">Cansan</option>
-            <option value="Angancasilian">Angancasilian</option>
-            <option value="Garita">Garita</option>
-            <option value="Cubag">Cubag</option>
-            <option value="Ngarag">Ngarag</option>
-            <option value="Anao">Anao</option>
-            <option value="Centro">Centro</option>
-            <option value="Catabayungan">Catabayungan</option>
-            <option value="Casibarag Sur">Casibarag Sur</option>
-            <option value="Casibarag Norte">Casibarag Norte</option>
-            <option value="Luquilu">Luquilu</option>
-        </select>
-
-        <!-- SPECIFIC PUROK / DETAILS (optional) -->
-        <label>📍 Specific Purok/Details (Optional)</label>
-        <input type="text" name="pickup_details" id="pickup_details" placeholder="Example: Purok 6, near church, etc.">
-
-        <small style="color: #666; display: block; margin-top: -5px; margin-bottom: 15px;">
-            Cabagan, Isabela - Add specific purok or landmark
-        </small>
-
-        <label>📍 Drop-off Location</label>
-        <input type="text" name="dropoff" placeholder="Enter your destination" required>
-
-        <label>👥 Number of Passengers</label>
-        <select name="passengers" id="passengers" onchange="updateFare()" required>
-            <option value="1">1 Passenger - ₱40</option>
-            <option value="2">2 Passengers - ₱80</option>
-            <option value="3">3 Passengers - ₱120</option>
-            <option value="4">4 Passengers - ₱160</option>
-        </select>
-
-        <!-- FARE DISPLAY -->
-        <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin: 15px 0;">
-            <strong>💰 Fare: ₱<span id="fare_amount">40</span></strong>
-            <small style="display: block; margin-top: 5px;">Base fare: ₱40 per passenger</small>
+<div class="booking-container">
+    <div class="booking-card">
+        <div class="booking-header">
+            <div class="emoji-large">🚕✨</div>
+            <h1>Book Your Ride</h1>
+            <p>Hi <strong>{{ passenger.name }}</strong>! Where to today?</p>
         </div>
 
-        <button type="submit">Submit Booking</button>
-    </form>
+        <form method="POST" action="{{ url_for('views.book_ride') }}" onsubmit="return prepareSubmit()">
+            <!-- PICKUP LOCATION -->
+            <div class="form-group">
+                <label class="form-label">📍 Pick-up Barangay</label>
+                <select name="pickup" id="pickup" class="form-select" required>
+                    <option value="">-- Select Pickup Barangay --</option>
+                    <option value="Magassi">Magassi</option>
+                    <option value="Balasig">Balasig</option>
+                    <option value="Cansan">Cansan</option>
+                    <option value="Angancasilian">Angancasilian</option>
+                    <option value="Garita">Garita</option>
+                    <option value="Cubag">Cubag</option>
+                    <option value="Ngarag">Ngarag</option>
+                    <option value="Anao">Anao</option>
+                    <option value="Centro">Centro</option>
+                    <option value="Catabayungan">Catabayungan</option>
+                    <option value="Casibarag Sur">Casibarag Sur</option>
+                    <option value="Casibarag Norte">Casibarag Norte</option>
+                    <option value="Luquilu">Luquilu</option>
+                </select>
+            </div>
 
-    <a href="{{ url_for('views.passenger_dashboard') }}" style="display: block; text-align: center; margin-top: 20px;">← Back to Dashboard</a>
+            <!-- PUROK / DETAILS (Optional) -->
+            <div class="form-group">
+                <label class="form-label">📍 Specific Purok / Landmark (Optional)</label>
+                <input type="text" name="pickup_details" id="pickup_details" class="form-input" 
+                       placeholder="e.g., Purok 6, near church, beside school">
+                <small class="input-hint">Adding details helps the driver find you faster.</small>
+            </div>
+
+            <!-- DROPOFF LOCATION (NOW A DROPDOWN) -->
+            <div class="form-group">
+                <label class="form-label">🏁 Drop-off Barangay</label>
+                <select name="dropoff" id="dropoff" class="form-select" required>
+                    <option value="">-- Select Drop-off Barangay --</option>
+                    <option value="Magassi">Magassi</option>
+                    <option value="Balasig">Balasig</option>
+                    <option value="Cansan">Cansan</option>
+                    <option value="Angancasilian">Angancasilian</option>
+                    <option value="Garita">Garita</option>
+                    <option value="Cubag">Cubag</option>
+                    <option value="Ngarag">Ngarag</option>
+                    <option value="Anao">Anao</option>
+                    <option value="Centro">Centro</option>
+                    <option value="Catabayungan">Catabayungan</option>
+                    <option value="Casibarag Sur">Casibarag Sur</option>
+                    <option value="Casibarag Norte">Casibarag Norte</option>
+                    <option value="Luquilu">Luquilu</option>
+                </select>
+            </div>
+
+            <!-- PASSENGERS & FARE -->
+            <div class="form-group">
+                <label class="form-label">👥 Number of Passengers</label>
+                <select name="passengers" id="passengers" class="form-select" onchange="updateFare()" required>
+                    <option value="1">1 Passenger</option>
+                    <option value="2">2 Passengers</option>
+                    <option value="3">3 Passengers</option>
+                    <option value="4">4 Passengers</option>
+                </select>
+            </div>
+
+            <!-- FARE DISPLAY -->
+            <div class="fare-card">
+                <div class="fare-label">💰 Total Fare</div>
+                <div class="fare-amount">₱<span id="fare_amount">40</span></div>
+                <div class="fare-note">Base fare: ₱40 per passenger</div>
+            </div>
+
+            <!-- SUBMIT BUTTON -->
+            <button type="submit" class="submit-btn">✅ Confirm Booking</button>
+        </form>
+
+        <div class="back-link">
+            <a href="{{ url_for('views.passenger_dashboard') }}">← Back to Dashboard</a>
+        </div>
+    </div>
 </div>
+
+<style>
+    .booking-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .booking-card {
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        overflow: hidden;
+        padding: 30px;
+    }
+
+    .booking-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .emoji-large {
+        font-size: 60px;
+        margin-bottom: 10px;
+    }
+
+    .booking-header h1 {
+        color: purple;
+        font-size: 28px;
+        margin-bottom: 8px;
+    }
+
+    .booking-header p {
+        color: #666;
+        font-size: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-select, .form-input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-select:focus, .form-input:focus {
+        outline: none;
+        border-color: purple;
+        box-shadow: 0 0 0 3px rgba(128, 0, 128, 0.1);
+    }
+
+    .input-hint {
+        display: block;
+        font-size: 12px;
+        color: #999;
+        margin-top: 5px;
+    }
+
+    .fare-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 16px;
+        padding: 20px;
+        text-align: center;
+        margin: 25px 0;
+        color: white;
+    }
+
+    .fare-label {
+        font-size: 14px;
+        opacity: 0.9;
+        letter-spacing: 1px;
+    }
+
+    .fare-amount {
+        font-size: 48px;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+
+    .fare-note {
+        font-size: 12px;
+        opacity: 0.8;
+    }
+
+    .submit-btn {
+        width: 100%;
+        background: purple;
+        color: white;
+        border: none;
+        padding: 14px;
+        font-size: 18px;
+        font-weight: 600;
+        border-radius: 40px;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+    }
+
+    .submit-btn:hover {
+        background: #5a1a5a;
+        transform: scale(1.02);
+    }
+
+    .back-link {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .back-link a {
+        color: purple;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .back-link a:hover {
+        text-decoration: underline;
+    }
+</style>
 
 <script>
     function updateFare() {
-        var passengers = document.getElementById('passengers').value;
-        var fare = passengers * 40;
+        let passengers = document.getElementById('passengers').value;
+        let fare = passengers * 40;
         document.getElementById('fare_amount').innerText = fare;
     }
 
-    function calculateFare() {
-        var passengers = document.getElementById('passengers').value;
-        var fare = passengers * 40;
-        var hiddenInput = document.createElement('input');
-        hiddenInput.type = 'hidden';
-        hiddenInput.name = 'fare';
-        hiddenInput.value = fare;
-        
-        // Combine pickup barangay with details
-        var pickup = document.getElementById('pickup').value;
-        var pickupDetails = document.getElementById('pickup_details').value;
-        var fullPickup = pickup;
-        if (pickupDetails) {
+    function prepareSubmit() {
+        let pickup = document.getElementById('pickup').value;
+        let pickupDetails = document.getElementById('pickup_details').value;
+        let dropoff = document.getElementById('dropoff').value;
+        let passengers = document.getElementById('passengers').value;
+        let fare = passengers * 40;
+
+        // Combine pickup with details if provided
+        let fullPickup = pickup;
+        if (pickupDetails.trim() !== "") {
             fullPickup = pickup + " - " + pickupDetails;
         }
-        
-        var fullPickupInput = document.createElement('input');
-        fullPickupInput.type = 'hidden';
-        fullPickupInput.name = 'pickup';
-        fullPickupInput.value = fullPickup;
-        
-        document.forms[0].appendChild(hiddenInput);
-        document.forms[0].appendChild(fullPickupInput);
+
+        // Create hidden inputs for the actual form submission
+        let hiddenPickup = document.createElement('input');
+        hiddenPickup.type = 'hidden';
+        hiddenPickup.name = 'pickup';
+        hiddenPickup.value = fullPickup;
+
+        let hiddenDropoff = document.createElement('input');
+        hiddenDropoff.type = 'hidden';
+        hiddenDropoff.name = 'dropoff';
+        hiddenDropoff.value = dropoff;
+
+        let hiddenPassengers = document.createElement('input');
+        hiddenPassengers.type = 'hidden';
+        hiddenPassengers.name = 'passengers';
+        hiddenPassengers.value = passengers;
+
+        let hiddenFare = document.createElement('input');
+        hiddenFare.type = 'hidden';
+        hiddenFare.name = 'fare';
+        hiddenFare.value = fare;
+
+        let form = document.forms[0];
+        form.appendChild(hiddenPickup);
+        form.appendChild(hiddenDropoff);
+        form.appendChild(hiddenPassengers);
+        form.appendChild(hiddenFare);
+
         return true;
     }
 </script>
