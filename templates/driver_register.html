@@ -1,104 +1,48 @@
-{% extends "base.html" %}
-
-{% block content %}
-<div class="card">
-    <h2>Driver Portal</h2>
-
-    <div style="margin-bottom: 20px;">
-        <button onclick="showLogin()" id="loginBtn" class="btn" style="background: purple; margin-right: 10px;">Login</button>
-        <button onclick="showRegister()" id="registerBtn" class="btn" style="background: gray;">Register</button>
-    </div>
-
-    <!-- Login Form -->
-    <div id="loginForm">
-        <h3>Login to Accept Rides</h3>
-        <form method="POST" action="{{ url_for('views.driver_login') }}">
-            <label>Email</label>
-            <input type="email" name="email" placeholder="Email (example@mail.com)" required>
-
-            <label>Password</label>
-            <input type="password" name="password" placeholder="Password" required>
-
-            <button type="submit">Login</button>
-        </form>
-    </div>
-
-    <!-- Register Form -->
-    <div id="registerForm" style="display: none;">
-        <h3>Create Driver Account</h3>
-        <form method="POST" action="{{ url_for('views.driver_register') }}" onsubmit="return validateForm()">
-            <input type="text" name="name" id="name" placeholder="Full Name" required>
-
-            <input type="text" name="phone" id="phone" placeholder="Phone Number (11 digits)" required>
-            <small style="color: #999; display: block; margin-top: -5px; margin-bottom: 10px;">Example: 09123456789</small>
-
-            <input type="email" name="email" id="email" placeholder="Email (example@mail.com)" required>
-
-            <input type="text" name="tricycle" id="tricycle" placeholder="Tricycle Number" required>
-
-            <input type="password" name="password" id="password" placeholder="Password" required>
-
-            <input type="password" name="confirm" id="confirm" placeholder="Confirm Password" required>
-
-            <button type="submit">Register</button>
-        </form>
-        <p style="margin-top: 15px;">After registration, login with your email and password</p>
-    </div>
-</div>
-
-<script>
-    function showLogin() {
-        document.getElementById('loginForm').style.display = 'block';
-        document.getElementById('registerForm').style.display = 'none';
-        document.getElementById('loginBtn').style.background = 'purple';
-        document.getElementById('registerBtn').style.background = 'gray';
-    }
-
-    function showRegister() {
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('registerForm').style.display = 'block';
-        document.getElementById('loginBtn').style.background = 'gray';
-        document.getElementById('registerBtn').style.background = 'purple';
-    }
-
-    function validateForm() {
-    var phone = document.getElementById('phone').value.trim();
-    var email = document.getElementById('email').value.trim();  // .trim() removes hidden spaces
-    var password = document.getElementById('password').value;
-    var confirm = document.getElementById('confirm').value;
-    var tricycle = document.getElementById('tricycle').value.trim();
+@views.route("/driver_register", methods=["POST"])
+def driver_register():
+    name = request.form.get("name")
+    phone = request.form.get("phone")
+    email = request.form.get("email")
+    password = request.form.get("password")
+    confirm = request.form.get("confirm")
+    tricycle = request.form.get("tricycle")
     
-    if (!/^\d{11}$/.test(phone)) {
-        alert('Phone number must be exactly 11 digits');
-        return false;
-    }
-    if (email.indexOf('@') === -1 || email.indexOf('.') === -1) {
-        alert('Please enter a valid email address (must contain @ and .)');
-        return false;
-    }
+    if not name or not phone or not email or not password or not confirm or not tricycle:
+        flash("All fields are required", "error")
+        return redirect(url_for('views.driver_login'))
+
+    if not re.match(r'^\d{11}$', phone):
+        flash("Phone number must be exactly 11 digits", "error")
+        return redirect(url_for('views.driver_login'))
+
+    # FIXED EMAIL VALIDATION - using regex instead of 'in'
+    import re as regex
+    email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not regex.match(email_pattern, str(email)):
+        flash("Please enter a valid email address (e.g., name@example.com)", "error")
+        return redirect(url_for('views.driver_login'))
+
+    if len(password) < 8:
+        flash("Password must be at least 8 characters", "error")
+        return redirect(url_for('views.driver_login'))
+
+    if password != confirm:
+        flash("Passwords do not match", "error")
+        return redirect(url_for('views.driver_login'))
+
+    db = get_db()
     
-    if (email === '') {
-        alert('Email is required');
-        return false;
-    }
+    existing = db.execute("SELECT * FROM drivers WHERE email = ?", (email,)).fetchone()
+    if existing:
+        flash("Email already registered", "error")
+        db.close()
+        return redirect(url_for('views.driver_login'))
     
-    if (password.length < 8) {
-        alert('Password must be at least 8 characters');
-        return false;
-    }
-    
-    if (password !== confirm) {
-        alert('Passwords do not match');
-        return false;
-    }
-    
-    if (tricycle === '') {
-        alert('Please enter tricycle number');
-        return false;
-    }
-    
-    return true;
-}
-    }
-</script>
-{% endblock %}
+    db.execute('''INSERT INTO drivers (email, name, phone, password, tricycle, status, registered_date)
+                  VALUES (?, ?, ?, ?, ?, ?, ?)''',
+              (email, name, phone, password, tricycle, 'offline', get_local_time().strftime("%Y-%m-%d")))
+    db.commit()
+    db.close()
+
+    flash("Registration successful! Please login.", "success")
+    return redirect(url_for('views.driver_login'))
