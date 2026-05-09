@@ -1,0 +1,65 @@
+import time
+
+
+def get_destination():
+    while True:
+        try:
+            destination = input("Enter destination: ").strip()
+
+            if destination == "":
+                print("Destination cannot be empty.")
+            else:
+                return destination
+
+        except KeyboardInterrupt:
+            print("\nProgram interrupted safely.")
+            return None
+
+        except Exception:
+            print("Unexpected input error.")
+
+
+def notify_driver_arrival(destination):
+    updates = [
+        "Driver left terminal",
+        "Driver is 5 KM away",
+        "Driver is 2 KM away",
+        "Driver arrived at destination"
+    ]
+
+    print("\nDriver is on the way...\n")
+
+    for update in updates:
+        try:
+            print(update)
+            time.sleep(2)
+
+        except KeyboardInterrupt:
+            print("\nNotification stopped safely.")
+            return
+
+        except Exception:
+            print("Error during notification update.")
+            return
+
+    print("\n---------------------------")
+    print(f"NOTIFICATION: Driver has arrived at {destination}!")
+    print("Please prepare for pickup/drop-off.")
+    print("-----------------------------")
+
+
+def main():
+    print("-------------------------")
+    print("TAPCY DRIVER NOTIFIER")
+    print("-------------------------")
+
+    destination = get_destination()
+
+    if destination is not None:
+        notify_driver_arrival(destination)
+
+    print("\nSystem closed safely.")
+
+
+if __name__ == "__main__":
+    main()
