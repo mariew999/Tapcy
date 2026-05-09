@@ -38,9 +38,9 @@ def save_transaction(destination, distance, fare, payment, change):
 
 
 def kiosk():
-    print("================================")
-    print("      TAPCY KIOSK SYSTEM")
-    print("================================")
+    print("----------------------")
+    print("TAPCY KIOSK SYSTEM")
+    print("----------------------")
 
     destination = input("Enter destination: ").strip()
 
@@ -65,13 +65,13 @@ def kiosk():
 
     change = payment - fare
 
-    print("\n========== RECEIPT ==========")
+    print("\n----- RECEIPT -----")
     print(f"Destination : {destination}")
     print(f"Distance    : {distance:.2f} KM")
     print(f"Fare        : ₱{fare:.2f}")
     print(f"Payment     : ₱{payment:.2f}")
     print(f"Change      : ₱{change:.2f}")
-    print("================================")
+    print("--------------------------")
 
     save_transaction(destination, distance, fare, payment, change)
 
