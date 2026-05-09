@@ -1,0 +1,82 @@
+from datetime import datetime
+
+RATE_PER_KM = 5
+
+
+def calculate_fare(distance):
+    return distance * RATE_PER_KM
+
+
+def get_float_input(message):
+    while True:
+        try:
+            value = float(input(message))
+
+            if value < 0:
+                print("Please enter a positive number.")
+                continue
+
+            return value
+
+        except ValueError:
+            print("Invalid number. Try again.")
+
+
+def save_transaction(destination, distance, fare, payment, change):
+    try:
+        with open("transactions.txt", "a") as file:
+            file.write(
+                f"{datetime.now()} | "
+                f"Destination: {destination} | "
+                f"Distance: {distance} KM | "
+                f"Fare: ₱{fare:.2f} | "
+                f"Payment: ₱{payment:.2f} | "
+                f"Change: ₱{change:.2f}\n"
+            )
+    except Exception as e:
+        print("Error saving transaction:", e)
+
+
+def kiosk():
+    print("================================")
+    print("      TAPCY KIOSK SYSTEM")
+    print("================================")
+
+    destination = input("Enter destination: ").strip()
+
+    if destination == "":
+        print("Destination cannot be empty.")
+        return
+
+    distance = get_float_input("Enter distance (KM): ")
+
+    fare = calculate_fare(distance)
+
+    print(f"\nRate per KM : ₱{RATE_PER_KM}")
+    print(f"Total Fare  : ₱{fare:.2f}")
+
+    while True:
+        payment = get_float_input("Enter payment amount: ₱")
+
+        if payment < fare:
+            print("Insufficient payment. Try again.")
+        else:
+            break
+
+    change = payment - fare
+
+    print("\n========== RECEIPT ==========")
+    print(f"Destination : {destination}")
+    print(f"Distance    : {distance:.2f} KM")
+    print(f"Fare        : ₱{fare:.2f}")
+    print(f"Payment     : ₱{payment:.2f}")
+    print(f"Change      : ₱{change:.2f}")
+    print("================================")
+
+    save_transaction(destination, distance, fare, payment, change)
+
+    print("Transaction saved successfully.")
+
+
+if __name__ == "__main__":
+    kiosk()
