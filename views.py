@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import re
 import sqlite3
 import os
+from json import dumps
 
 views = Blueprint('views', __name__)
 
@@ -81,7 +82,6 @@ def init_db():
         )
     ''')
     
-    # NEW TABLE: passenger notifications (driver arrival)
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS passenger_notifications (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -101,15 +101,14 @@ init_db()
 active_riders = {}
 active_drivers = {}
 
-# ============= DISTANCE-BASED FARE MATRIX =============
-# Key: (pickup_barangay, dropoff_barangay) -> base fare in PHP
+# ============= DISTANCE-BASED FARE MATRIX (NESTED DICT) =============
 distance_fares = {
-    ("Garita", "Balasig"): 20,
-    ("Balasig", "Cubag"): 40,
-    ("Catabayungan", "Centro"): 30,
-    ("Centro", "Catabayungan"): 30,
-    ("Cubag", "Garita"): 35,
-    ("Angancasilian", "Ngarag"): 25,
+    "Garita": {"Balasig": 20},
+    "Balasig": {"Cubag": 40},
+    "Catabayungan": {"Centro": 30},
+    "Centro": {"Catabayungan": 30},
+    "Cubag": {"Garita": 35},
+    "Angancasilian": {"Ngarag": 25},
     # Add more pairs as needed
 }
 DEFAULT_FARE = 50
@@ -217,11 +216,9 @@ def passenger_dashboard():
 
     db = get_db()
     
-    # Get passenger details
     passenger_data = db.execute("SELECT * FROM passengers WHERE phone = ?", 
                                 (session['passenger']['phone'],)).fetchone()
     
-    # Count completed bookings
     completed_count = db.execute("SELECT COUNT(*) as count FROM bookings WHERE passenger_phone = ? AND status = 'completed'",
                                  (session['passenger']['phone'],)).fetchone()
     
@@ -229,7 +226,6 @@ def passenger_dashboard():
                          (session['passenger']['phone'],)).fetchall()
     available_drivers = db.execute("SELECT * FROM drivers WHERE status = 'available'").fetchall()
     
-    # Fetch unread passenger notifications
     passenger_notifications = db.execute(
         "SELECT * FROM passenger_notifications WHERE passenger_phone = ? AND is_read = 0 ORDER BY id DESC",
         (session['passenger']['phone'],)
@@ -274,7 +270,6 @@ def book_ride():
         dropoff_details = request.form.get("dropoff_details", "")
         passengers_count = int(request.form.get("passengers"))
         
-        # Combine full pickup/dropoff strings
         full_pickup = pickup_barangay
         if pickup_details.strip():
             full_pickup = f"{pickup_barangay} - {pickup_details}"
@@ -282,10 +277,14 @@ def book_ride():
         if dropoff_details.strip():
             full_dropoff = f"{dropoff_barangay} - {dropoff_details}"
         
-        # Get base fare from distance matrix
-        pair = (pickup_barangay, dropoff_barangay)
-        base_fare = distance_fares.get(pair, DEFAULT_FARE)
-        fare = base_fare * passengers_count   # per passenger (or remove multiplication if total)
+        # Get fare from nested dict (try both directions)
+        base_fare = DEFAULT_FARE
+        if pickup_barangay in distance_fares and dropoff_barangay in distance_fares[pickup_barangay]:
+            base_fare = distance_fares[pickup_barangay][dropoff_barangay]
+        elif dropoff_barangay in distance_fares and pickup_barangay in distance_fares[dropoff_barangay]:
+            base_fare = distance_fares[dropoff_barangay][pickup_barangay]
+        
+        fare = base_fare * passengers_count
         
         db = get_db()
         cursor = db.execute('''INSERT INTO bookings (passenger_phone, passenger_name, pickup, dropoff, passengers, fare, status, time, date)
@@ -308,8 +307,6 @@ def book_ride():
         flash(f"🎀 Booking #{booking_id} created! Fare: ₱{fare}. {len(available_drivers)} driver(s) notified.", "success")
         return redirect(url_for('views.passenger_dashboard'))
 
-    # For GET request, pass fare matrix to template as JSON
-    from json import dumps
     return render_template("book_ride.html", 
                            passenger=session['passenger'], 
                            active_tab='passenger',
@@ -536,7 +533,6 @@ def toggle_driver_status():
     db.close()
     return redirect(url_for('views.driver_dashboard'))
 
-# NEW ROUTE: Notify passenger that driver has arrived
 @views.route("/notify_arrival/<int:booking_id>")
 def notify_arrival(booking_id):
     if 'driver' not in session:
