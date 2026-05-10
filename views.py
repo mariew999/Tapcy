@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import re
 import sqlite3
 import os
+from json import dumps
 
 views = Blueprint('views', __name__)
 
@@ -93,7 +94,7 @@ init_db()
 active_riders = {}
 active_drivers = {}
 
-# ============= EXACT FARES (PHP) FOR SINGLE PASSENGER – SYMMETRIC =============
+# ============= EXACT FARES (PHP) – SYMMETRIC =============
 exact_fares = {
     "Magassi": {
         "Balasig": 10, "Cansan": 15, "Angancasilian": 20, "Garita": 25,
@@ -138,13 +139,13 @@ exact_fares = {
     "Centro": {
         "Magassi": 40, "Balasig": 35, "Cansan": 35, "Angancasilian": 30,
         "Garita": 20, "Cubag": 15, "Ngarag": 15, "Anao": 10,
-        "Catabayungan": 15,   # <-- FIXED: now 15 (was 10)
+        "Catabayungan": 15,   # FIXED: now 15
         "Casibarag Sur": 15, "Casibarag Norte": 20, "Luquilu": 25
     },
     "Catabayungan": {
         "Magassi": 40, "Balasig": 40, "Cansan": 35, "Angancasilian": 35,
         "Garita": 25, "Cubag": 20, "Ngarag": 20, "Anao": 15,
-        "Centro": 15,   # symmetric with Centro->Catabayungan
+        "Centro": 15,   # symmetric
         "Casibarag Sur": 10, "Casibarag Norte": 15, "Luquilu": 20
     },
     "Casibarag Sur": {
@@ -174,7 +175,7 @@ def home():
         return redirect(url_for('views.driver_dashboard'))
     return render_template("index.html", active_tab='home')
 
-# ============= PASSENGER SECTION =============
+# ============= PASSENGER =============
 @views.route("/passenger_login", methods=["GET", "POST"])
 def passenger_login():
     if 'passenger' in session:
@@ -331,7 +332,11 @@ def book_ride():
         flash(f"🎀 Booking #{booking_id} created! Fare: ₱{fare}. {len(available_drivers)} driver(s) notified.", "success")
         return redirect(url_for('views.passenger_dashboard'))
 
-    return render_template("book_ride.html", passenger=session['passenger'], active_tab='passenger')
+    # GET request – show the form with fare data
+    return render_template("book_ride.html",
+                           passenger=session['passenger'],
+                           active_tab='passenger',
+                           exact_fares_json=dumps(exact_fares))
 
 @views.route("/cancel_booking/<int:booking_id>")
 def cancel_booking(booking_id):
@@ -353,7 +358,7 @@ def passenger_logout():
     session.pop('passenger', None)
     return redirect(url_for('views.passenger_login'))
 
-# ============= DRIVER SECTION =============
+# ============= DRIVER =============
 @views.route("/driver_login", methods=["GET", "POST"])
 def driver_login():
     if 'driver' in session:
