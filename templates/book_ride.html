@@ -43,7 +43,7 @@
             <div class="form-group">
                 <label class="form-label">🏁 Drop-off Barangay</label>
                 <select name="dropoff_barangay" id="dropoff_barangay" class="form-select" required>
-                    <option value="">-- Select Pickup Barangay --</option>
+                    <option value="">-- Select Drop-off Barangay --</option>
                     <option value="Anao">Anao</option>
                     <option value="Angancasilian">Angancasilian</option>
                     <option value="Balasig">Balasig</option>
@@ -83,10 +83,9 @@
             <div class="fare-card">
                 <div class="fare-label">💰 Total Fare</div>
                 <div class="fare-amount">₱<span id="fare_amount">40</span></div>
-                <div class="fare-note">Base fare: ₱40 per passenger</div>
+                <div class="fare-note">Fare depends on distance and number of passengers</div>
             </div>
 
-            <!-- SUBMIT BUTTON -->
             <button type="submit" class="submit-btn">✅ Confirm Booking</button>
         </form>
 
@@ -97,142 +96,55 @@
 </div>
 
 <style>
-    .booking-container {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
-    .booking-card {
-        background: white;
-        border-radius: 24px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        overflow: hidden;
-        padding: 30px;
-    }
-
-    .booking-header {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-
-    .emoji-large {
-        font-size: 60px;
-        margin-bottom: 10px;
-    }
-
-    .booking-header h1 {
-        color: purple;
-        font-size: 28px;
-        margin-bottom: 8px;
-    }
-
-    .booking-header p {
-        color: #666;
-        font-size: 16px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .form-label {
-        display: block;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 8px;
-        font-size: 14px;
-    }
-
-    .form-select, .form-input {
-        width: 100%;
-        padding: 12px 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
-        font-size: 16px;
-        transition: all 0.3s ease;
-        background: white;
-    }
-
-    .form-select:focus, .form-input:focus {
-        outline: none;
-        border-color: purple;
-        box-shadow: 0 0 0 3px rgba(128, 0, 128, 0.1);
-    }
-
-    .input-hint {
-        display: block;
-        font-size: 12px;
-        color: #999;
-        margin-top: 5px;
-    }
-
-    .fare-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 16px;
-        padding: 20px;
-        text-align: center;
-        margin: 25px 0;
-        color: white;
-    }
-
-    .fare-label {
-        font-size: 14px;
-        opacity: 0.9;
-        letter-spacing: 1px;
-    }
-
-    .fare-amount {
-        font-size: 48px;
-        font-weight: bold;
-        margin: 10px 0;
-    }
-
-    .fare-note {
-        font-size: 12px;
-        opacity: 0.8;
-    }
-
-    .submit-btn {
-        width: 100%;
-        background: purple;
-        color: white;
-        border: none;
-        padding: 14px;
-        font-size: 18px;
-        font-weight: 600;
-        border-radius: 40px;
-        cursor: pointer;
-        transition: transform 0.2s, background 0.2s;
-    }
-
-    .submit-btn:hover {
-        background: #5a1a5a;
-        transform: scale(1.02);
-    }
-
-    .back-link {
-        text-align: center;
-        margin-top: 20px;
-    }
-
-    .back-link a {
-        color: purple;
-        text-decoration: none;
-        font-size: 14px;
-    }
-
-    .back-link a:hover {
-        text-decoration: underline;
-    }
+    .booking-container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .booking-card { background: white; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 30px; }
+    .booking-header { text-align: center; margin-bottom: 30px; }
+    .emoji-large { font-size: 60px; margin-bottom: 10px; }
+    .booking-header h1 { color: purple; font-size: 28px; margin-bottom: 8px; }
+    .booking-header p { color: #666; font-size: 16px; }
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-weight: 600; color: #333; margin-bottom: 8px; font-size: 14px; }
+    .form-select, .form-input { width: 100%; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 16px; }
+    .form-select:focus, .form-input:focus { outline: none; border-color: purple; box-shadow: 0 0 0 3px rgba(128,0,128,0.1); }
+    .input-hint { display: block; font-size: 12px; color: #999; margin-top: 5px; }
+    .fare-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 20px; text-align: center; margin: 25px 0; color: white; }
+    .fare-label { font-size: 14px; opacity: 0.9; letter-spacing: 1px; }
+    .fare-amount { font-size: 48px; font-weight: bold; margin: 10px 0; }
+    .fare-note { font-size: 12px; opacity: 0.8; }
+    .submit-btn { width: 100%; background: purple; color: white; border: none; padding: 14px; font-size: 18px; font-weight: 600; border-radius: 40px; cursor: pointer; }
+    .submit-btn:hover { background: #5a1a5a; transform: scale(1.02); }
+    .back-link { text-align: center; margin-top: 20px; }
+    .back-link a { color: purple; text-decoration: none; font-size: 14px; }
 </style>
 
 <script>
+    // Fare matrix passed from backend
+    const fareMatrix = {{ fare_matrix_json|safe }};
+    const defaultFare = {{ default_fare }};
+
     function updateFare() {
-        let passengers = document.getElementById('passengers').value;
-        let fare = passengers * 40;
-        document.getElementById('fare_amount').innerText = fare;
+        let pickup = document.getElementById('pickup_barangay').value;
+        let dropoff = document.getElementById('dropoff_barangay').value;
+        let passengers = parseInt(document.getElementById('passengers').value) || 1;
+        
+        let fare = defaultFare;
+        if (pickup && dropoff && fareMatrix[pickup] && fareMatrix[pickup][dropoff]) {
+            fare = fareMatrix[pickup][dropoff];
+        } else {
+            // Try reverse order
+            if (dropoff && pickup && fareMatrix[dropoff] && fareMatrix[dropoff][pickup]) {
+                fare = fareMatrix[dropoff][pickup];
+            }
+        }
+        // Multiply by number of passengers
+        let totalFare = fare * passengers;
+        document.getElementById('fare_amount').innerText = totalFare;
     }
+
+    document.getElementById('pickup_barangay').addEventListener('change', updateFare);
+    document.getElementById('dropoff_barangay').addEventListener('change', updateFare);
+    document.getElementById('passengers').addEventListener('change', updateFare);
+    window.addEventListener('load', updateFare);
 
     function prepareSubmit() {
         let pickupBarangay = document.getElementById('pickup_barangay').value;
@@ -240,47 +152,30 @@
         let dropoffBarangay = document.getElementById('dropoff_barangay').value;
         let dropoffDetails = document.getElementById('dropoff_details').value;
         let passengers = document.getElementById('passengers').value;
-        let fare = passengers * 40;
-
-        // Combine pickup barangay with details
+        
+        let fare = defaultFare;
+        if (pickupBarangay && dropoffBarangay && fareMatrix[pickupBarangay] && fareMatrix[pickupBarangay][dropoffBarangay]) {
+            fare = fareMatrix[pickupBarangay][dropoffBarangay];
+        } else if (dropoffBarangay && pickupBarangay && fareMatrix[dropoffBarangay] && fareMatrix[dropoffBarangay][pickupBarangay]) {
+            fare = fareMatrix[dropoffBarangay][pickupBarangay];
+        }
+        let totalFare = fare * parseInt(passengers);
+        
         let fullPickup = pickupBarangay;
-        if (pickupDetails.trim() !== "") {
-            fullPickup = pickupBarangay + " - " + pickupDetails;
-        }
-
-        // Combine dropoff barangay with details
+        if (pickupDetails.trim()) fullPickup += " - " + pickupDetails;
         let fullDropoff = dropoffBarangay;
-        if (dropoffDetails.trim() !== "") {
-            fullDropoff = dropoffBarangay + " - " + dropoffDetails;
-        }
-
-        // Create hidden inputs for the actual form submission
-        let hiddenPickup = document.createElement('input');
-        hiddenPickup.type = 'hidden';
-        hiddenPickup.name = 'pickup';
-        hiddenPickup.value = fullPickup;
-
-        let hiddenDropoff = document.createElement('input');
-        hiddenDropoff.type = 'hidden';
-        hiddenDropoff.name = 'dropoff';
-        hiddenDropoff.value = fullDropoff;
-
-        let hiddenPassengers = document.createElement('input');
-        hiddenPassengers.type = 'hidden';
-        hiddenPassengers.name = 'passengers';
-        hiddenPassengers.value = passengers;
-
-        let hiddenFare = document.createElement('input');
-        hiddenFare.type = 'hidden';
-        hiddenFare.name = 'fare';
-        hiddenFare.value = fare;
-
+        if (dropoffDetails.trim()) fullDropoff += " - " + dropoffDetails;
+        
         let form = document.forms[0];
-        form.appendChild(hiddenPickup);
-        form.appendChild(hiddenDropoff);
-        form.appendChild(hiddenPassengers);
-        form.appendChild(hiddenFare);
-
+        let hPickup = document.createElement('input'); hPickup.type='hidden'; hPickup.name='pickup'; hPickup.value=fullPickup;
+        let hDropoff = document.createElement('input'); hDropoff.type='hidden'; hDropoff.name='dropoff'; hDropoff.value=fullDropoff;
+        let hPass = document.createElement('input'); hPass.type='hidden'; hPass.name='passengers'; hPass.value=passengers;
+        let hFare = document.createElement('input'); hFare.type='hidden'; hFare.name='fare'; hFare.value=totalFare;
+        let hPickupBar = document.createElement('input'); hPickupBar.type='hidden'; hPickupBar.name='pickup_barangay'; hPickupBar.value=pickupBarangay;
+        let hDropoffBar = document.createElement('input'); hDropoffBar.type='hidden'; hDropoffBar.name='dropoff_barangay'; hDropoffBar.value=dropoffBarangay;
+        
+        form.appendChild(hPickup); form.appendChild(hDropoff); form.appendChild(hPass);
+        form.appendChild(hFare); form.appendChild(hPickupBar); form.appendChild(hDropoffBar);
         return true;
     }
 </script>
