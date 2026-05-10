@@ -31,7 +31,6 @@
                 </select>
             </div>
 
-            <!-- PICKUP DETAILS -->
             <div class="form-group">
                 <label class="form-label">📍 Pickup Specifics </label>
                 <input type="text" name="pickup_details" id="pickup_details" class="form-input" 
@@ -60,7 +59,6 @@
                 </select>
             </div>
 
-            <!-- DROPOFF DETAILS -->
             <div class="form-group">
                 <label class="form-label">🏁 Drop-off Specifics </label>
                 <input type="text" name="dropoff_details" id="dropoff_details" class="form-input" 
@@ -68,7 +66,6 @@
                 <small class="input-hint">Adding details helps the driver know exactly where to drop you.</small>
             </div>
 
-            <!-- NUMBER OF PASSENGERS -->
             <div class="form-group">
                 <label class="form-label">👥 Number of Passengers</label>
                 <select name="passengers" id="passengers" class="form-select" onchange="updateFare()" required>
@@ -79,7 +76,6 @@
                 </select>
             </div>
 
-            <!-- FARE DISPLAY -->
             <div class="fare-card">
                 <div class="fare-label">💰 Total Fare</div>
                 <div class="fare-amount">₱<span id="fare_amount">40</span></div>
@@ -118,27 +114,27 @@
 </style>
 
 <script>
-    // Fare matrix passed from backend
     const fareMatrix = {{ fare_matrix_json|safe }};
     const defaultFare = {{ default_fare }};
+
+    function getFare(pickup, dropoff) {
+        if (fareMatrix[pickup] && fareMatrix[pickup][dropoff]) {
+            return fareMatrix[pickup][dropoff];
+        }
+        if (fareMatrix[dropoff] && fareMatrix[dropoff][pickup]) {
+            return fareMatrix[dropoff][pickup];
+        }
+        return defaultFare;
+    }
 
     function updateFare() {
         let pickup = document.getElementById('pickup_barangay').value;
         let dropoff = document.getElementById('dropoff_barangay').value;
         let passengers = parseInt(document.getElementById('passengers').value) || 1;
         
-        let fare = defaultFare;
-        if (pickup && dropoff && fareMatrix[pickup] && fareMatrix[pickup][dropoff]) {
-            fare = fareMatrix[pickup][dropoff];
-        } else {
-            // Try reverse order
-            if (dropoff && pickup && fareMatrix[dropoff] && fareMatrix[dropoff][pickup]) {
-                fare = fareMatrix[dropoff][pickup];
-            }
-        }
-        // Multiply by number of passengers
-        let totalFare = fare * passengers;
-        document.getElementById('fare_amount').innerText = totalFare;
+        let fare = getFare(pickup, dropoff);
+        let total = fare * passengers;
+        document.getElementById('fare_amount').innerText = total;
     }
 
     document.getElementById('pickup_barangay').addEventListener('change', updateFare);
@@ -153,12 +149,7 @@
         let dropoffDetails = document.getElementById('dropoff_details').value;
         let passengers = document.getElementById('passengers').value;
         
-        let fare = defaultFare;
-        if (pickupBarangay && dropoffBarangay && fareMatrix[pickupBarangay] && fareMatrix[pickupBarangay][dropoffBarangay]) {
-            fare = fareMatrix[pickupBarangay][dropoffBarangay];
-        } else if (dropoffBarangay && pickupBarangay && fareMatrix[dropoffBarangay] && fareMatrix[dropoffBarangay][pickupBarangay]) {
-            fare = fareMatrix[dropoffBarangay][pickupBarangay];
-        }
+        let fare = getFare(pickupBarangay, dropoffBarangay);
         let totalFare = fare * parseInt(passengers);
         
         let fullPickup = pickupBarangay;
