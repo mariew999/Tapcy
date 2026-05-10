@@ -9,11 +9,11 @@
             <p>Hi <strong>{{ passenger.name }}</strong>! Where to today?</p>
         </div>
 
-        <form method="POST" action="{{ url_for('views.book_ride') }}">
-            <!-- PICKUP LOCATION -->
+        <form method="POST" action="{{ url_for('views.book_ride') }}" id="bookingForm">
+            <!-- PICKUP -->
             <div class="form-group">
                 <label class="form-label">📍 Pick-up Barangay</label>
-                <select name="pickup_barangay" id="pickup_barangay" class="form-select" required>
+                <select name="pickup_barangay" id="pickup" class="form-select" required>
                     <option value="">-- Select Pickup Barangay --</option>
                     <option value="Anao">Anao</option>
                     <option value="Angancasilian">Angancasilian</option>
@@ -33,15 +33,15 @@
 
             <div class="form-group">
                 <label class="form-label">📍 Pickup Specifics (Optional)</label>
-                <input type="text" name="pickup_details" id="pickup_details" class="form-input" 
-                       placeholder="e.g., Purok 6, near church, beside school">
+                <input type="text" name="pickup_details" class="form-input" 
+                       placeholder="e.g., Purok 6, near church">
                 <small class="input-hint">Helps driver find you faster.</small>
             </div>
 
-            <!-- DROPOFF LOCATION -->
+            <!-- DROPOFF -->
             <div class="form-group">
                 <label class="form-label">🏁 Drop-off Barangay</label>
-                <select name="dropoff_barangay" id="dropoff_barangay" class="form-select" required>
+                <select name="dropoff_barangay" id="dropoff" class="form-select" required>
                     <option value="">-- Select Drop-off Barangay --</option>
                     <option value="Anao">Anao</option>
                     <option value="Angancasilian">Angancasilian</option>
@@ -61,8 +61,8 @@
 
             <div class="form-group">
                 <label class="form-label">🏁 Drop-off Specifics (Optional)</label>
-                <input type="text" name="dropoff_details" id="dropoff_details" class="form-input" 
-                       placeholder="e.g., Purok 3, near plaza, house number">
+                <input type="text" name="dropoff_details" class="form-input" 
+                       placeholder="e.g., Purok 3, near plaza">
                 <small class="input-hint">Helps driver know exactly where to drop you.</small>
             </div>
 
@@ -76,13 +76,11 @@
                 </select>
             </div>
 
-            <!-- FARE INFORMATION (no live calculation, backend handles exact fare) -->
-            <div class="fare-card">
-                <div class="fare-label">💰 Fare Information</div>
-                <div class="fare-note" style="font-size: 16px; margin-top: 10px;">
-                    Fare depends on your chosen route (₱10–₱50 per passenger).<br>
-                    Exact fare will be shown after booking confirmation.
-                </div>
+            <!-- LIVE FARE DISPLAY -->
+            <div class="fare-card" id="fareCard" style="display: none;">
+                <div class="fare-label">💰 Total Fare</div>
+                <div class="fare-amount">₱<span id="fare_amount">0</span></div>
+                <div class="fare-note">Exact fare based on your route</div>
             </div>
 
             <button type="submit" class="submit-btn">✅ Confirm Booking</button>
@@ -108,10 +106,48 @@
     .input-hint { display: block; font-size: 12px; color: #999; margin-top: 5px; }
     .fare-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 20px; text-align: center; margin: 25px 0; color: white; }
     .fare-label { font-size: 14px; opacity: 0.9; letter-spacing: 1px; }
+    .fare-amount { font-size: 48px; font-weight: bold; margin: 10px 0; }
     .fare-note { font-size: 12px; opacity: 0.8; }
     .submit-btn { width: 100%; background: purple; color: white; border: none; padding: 14px; font-size: 18px; font-weight: 600; border-radius: 40px; cursor: pointer; }
     .submit-btn:hover { background: #5a1a5a; transform: scale(1.02); }
     .back-link { text-align: center; margin-top: 20px; }
     .back-link a { color: purple; text-decoration: none; font-size: 14px; }
 </style>
+
+<script>
+    // Fare dictionary passed from backend
+    const fareMatrix = {{ exact_fares_json|safe }};
+    const defaultFare = 50;
+
+    function getFare(pickup, dropoff) {
+        if (fareMatrix[pickup] && fareMatrix[pickup][dropoff] !== undefined) {
+            return fareMatrix[pickup][dropoff];
+        }
+        if (fareMatrix[dropoff] && fareMatrix[dropoff][pickup] !== undefined) {
+            return fareMatrix[dropoff][pickup];
+        }
+        return defaultFare;
+    }
+
+    function updateFareDisplay() {
+        const pickup = document.getElementById('pickup').value;
+        const dropoff = document.getElementById('dropoff').value;
+        const passengers = parseInt(document.getElementById('passengers').value) || 1;
+        const fareCard = document.getElementById('fareCard');
+
+        if (pickup && dropoff && pickup !== dropoff) {
+            const baseFare = getFare(pickup, dropoff);
+            const totalFare = baseFare * passengers;
+            document.getElementById('fare_amount').innerText = totalFare;
+            fareCard.style.display = 'block';
+        } else {
+            fareCard.style.display = 'none';
+        }
+    }
+
+    document.getElementById('pickup').addEventListener('change', updateFareDisplay);
+    document.getElementById('dropoff').addEventListener('change', updateFareDisplay);
+    document.getElementById('passengers').addEventListener('change', updateFareDisplay);
+    window.addEventListener('load', updateFareDisplay);
+</script>
 {% endblock %}
