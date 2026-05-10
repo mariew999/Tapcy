@@ -93,8 +93,7 @@ init_db()
 active_riders = {}
 active_drivers = {}
 
-# ============= EXACT FARES (PHP) FOR SINGLE PASSENGER =============
-# Based on the distances/costs you provided
+# ============= EXACT FARES (PHP) FOR SINGLE PASSENGER – SYMMETRIC =============
 exact_fares = {
     "Magassi": {
         "Balasig": 10, "Cansan": 15, "Angancasilian": 20, "Garita": 25,
@@ -102,50 +101,69 @@ exact_fares = {
         "Catabayungan": 40, "Casibarag Sur": 45, "Casibarag Norte": 45, "Luquilu": 50
     },
     "Balasig": {
-        "Cansan": 10, "Angancasilian": 15, "Garita": 20, "Cubag": 25,
-        "Ngarag": 30, "Anao": 35, "Centro": 35, "Catabayungan": 40,
-        "Casibarag Sur": 40, "Casibarag Norte": 45, "Luquilu": 50
+        "Magassi": 10, "Cansan": 10, "Angancasilian": 15, "Garita": 20,
+        "Cubag": 25, "Ngarag": 30, "Anao": 35, "Centro": 35,
+        "Catabayungan": 40, "Casibarag Sur": 40, "Casibarag Norte": 45, "Luquilu": 50
     },
     "Cansan": {
-        "Angancasilian": 10, "Garita": 15, "Cubag": 20, "Ngarag": 25,
-        "Anao": 30, "Centro": 35, "Catabayungan": 35, "Casibarag Sur": 40,
-        "Casibarag Norte": 40, "Luquilu": 45
+        "Magassi": 15, "Balasig": 10, "Angancasilian": 10, "Garita": 15,
+        "Cubag": 20, "Ngarag": 25, "Anao": 30, "Centro": 35,
+        "Catabayungan": 35, "Casibarag Sur": 40, "Casibarag Norte": 40, "Luquilu": 45
     },
     "Angancasilian": {
-        "Garita": 10, "Cubag": 15, "Ngarag": 20, "Anao": 25,
-        "Centro": 30, "Catabayungan": 35, "Casibarag Sur": 35, "Casibarag Norte": 40,
-        "Luquilu": 45
+        "Magassi": 20, "Balasig": 15, "Cansan": 10, "Garita": 10,
+        "Cubag": 15, "Ngarag": 20, "Anao": 25, "Centro": 30,
+        "Catabayungan": 35, "Casibarag Sur": 35, "Casibarag Norte": 40, "Luquilu": 45
     },
     "Garita": {
+        "Magassi": 25, "Balasig": 20, "Cansan": 15, "Angancasilian": 10,
         "Cubag": 10, "Ngarag": 10, "Anao": 15, "Centro": 20,
         "Catabayungan": 25, "Casibarag Sur": 30, "Casibarag Norte": 35, "Luquilu": 35
     },
     "Cubag": {
-        "Ngarag": 10, "Anao": 15, "Centro": 15, "Catabayungan": 20,
-        "Casibarag Sur": 25, "Casibarag Norte": 30, "Luquilu": 35
+        "Magassi": 30, "Balasig": 25, "Cansan": 20, "Angancasilian": 15,
+        "Garita": 10, "Ngarag": 10, "Anao": 15, "Centro": 15,
+        "Catabayungan": 20, "Casibarag Sur": 25, "Casibarag Norte": 30, "Luquilu": 35
     },
     "Ngarag": {
-        "Anao": 10, "Centro": 15, "Catabayungan": 20, "Casibarag Sur": 25,
-        "Casibarag Norte": 25, "Luquilu": 35
+        "Magassi": 35, "Balasig": 30, "Cansan": 25, "Angancasilian": 20,
+        "Garita": 10, "Cubag": 10, "Anao": 10, "Centro": 15,
+        "Catabayungan": 20, "Casibarag Sur": 25, "Casibarag Norte": 25, "Luquilu": 35
     },
     "Anao": {
-        "Centro": 10, "Catabayungan": 15, "Casibarag Sur": 20, "Casibarag Norte": 20,
-        "Luquilu": 30
+        "Magassi": 35, "Balasig": 35, "Cansan": 30, "Angancasilian": 25,
+        "Garita": 15, "Cubag": 15, "Ngarag": 10, "Centro": 10,
+        "Catabayungan": 15, "Casibarag Sur": 20, "Casibarag Norte": 20, "Luquilu": 30
     },
     "Centro": {
-        "Catabayungan": 10, "Casibarag Sur": 15, "Casibarag Norte": 20, "Luquilu": 25
+        "Magassi": 40, "Balasig": 35, "Cansan": 35, "Angancasilian": 30,
+        "Garita": 20, "Cubag": 15, "Ngarag": 15, "Anao": 10,
+        "Catabayungan": 15,   # <-- FIXED: now 15 (was 10)
+        "Casibarag Sur": 15, "Casibarag Norte": 20, "Luquilu": 25
     },
     "Catabayungan": {
+        "Magassi": 40, "Balasig": 40, "Cansan": 35, "Angancasilian": 35,
+        "Garita": 25, "Cubag": 20, "Ngarag": 20, "Anao": 15,
+        "Centro": 15,   # symmetric with Centro->Catabayungan
         "Casibarag Sur": 10, "Casibarag Norte": 15, "Luquilu": 20
     },
     "Casibarag Sur": {
-        "Casibarag Norte": 10, "Luquilu": 15
+        "Magassi": 45, "Balasig": 40, "Cansan": 40, "Angancasilian": 35,
+        "Garita": 30, "Cubag": 25, "Ngarag": 25, "Anao": 20,
+        "Centro": 15, "Catabayungan": 10, "Casibarag Norte": 10, "Luquilu": 15
     },
     "Casibarag Norte": {
-        "Luquilu": 10
+        "Magassi": 45, "Balasig": 45, "Cansan": 40, "Angancasilian": 40,
+        "Garita": 35, "Cubag": 30, "Ngarag": 25, "Anao": 20,
+        "Centro": 20, "Catabayungan": 15, "Casibarag Sur": 10, "Luquilu": 10
+    },
+    "Luquilu": {
+        "Magassi": 50, "Balasig": 50, "Cansan": 45, "Angancasilian": 45,
+        "Garita": 35, "Cubag": 35, "Ngarag": 35, "Anao": 30,
+        "Centro": 25, "Catabayungan": 20, "Casibarag Sur": 15, "Casibarag Norte": 10
     },
 }
-DEFAULT_FARE = 50   # fallback for any missing route (should not happen)
+DEFAULT_FARE = 50
 
 # ============= HOME =============
 @views.route("/")
@@ -275,15 +293,14 @@ def book_ride():
         dropoff_details = request.form.get("dropoff_details", "")
         passengers_count = int(request.form.get("passengers"))
 
-        # ----- EXACT FARE LOOKUP (based on your provided list) -----
+        # Look up exact fare (try both directions)
         if pickup_barangay in exact_fares and dropoff_barangay in exact_fares[pickup_barangay]:
             base_fare = exact_fares[pickup_barangay][dropoff_barangay]
+        elif dropoff_barangay in exact_fares and pickup_barangay in exact_fares[dropoff_barangay]:
+            base_fare = exact_fares[dropoff_barangay][pickup_barangay]
         else:
-            # Try reverse direction (e.g., if user selects dropoff as origin)
-            if dropoff_barangay in exact_fares and pickup_barangay in exact_fares[dropoff_barangay]:
-                base_fare = exact_fares[dropoff_barangay][pickup_barangay]
-            else:
-                base_fare = DEFAULT_FARE
+            base_fare = DEFAULT_FARE
+
         fare = base_fare * passengers_count
 
         full_pickup = pickup_barangay
@@ -314,7 +331,6 @@ def book_ride():
         flash(f"🎀 Booking #{booking_id} created! Fare: ₱{fare}. {len(available_drivers)} driver(s) notified.", "success")
         return redirect(url_for('views.passenger_dashboard'))
 
-    # GET request – show the booking form
     return render_template("book_ride.html", passenger=session['passenger'], active_tab='passenger')
 
 @views.route("/cancel_booking/<int:booking_id>")
