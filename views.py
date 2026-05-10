@@ -139,13 +139,13 @@ exact_fares = {
     "Centro": {
         "Magassi": 40, "Balasig": 35, "Cansan": 35, "Angancasilian": 30,
         "Garita": 20, "Cubag": 15, "Ngarag": 15, "Anao": 10,
-        "Catabayungan": 15,   # FIXED: now 15
+        "Catabayungan": 15,   # fixed
         "Casibarag Sur": 15, "Casibarag Norte": 20, "Luquilu": 25
     },
     "Catabayungan": {
         "Magassi": 40, "Balasig": 40, "Cansan": 35, "Angancasilian": 35,
         "Garita": 25, "Cubag": 20, "Ngarag": 20, "Anao": 15,
-        "Centro": 15,   # symmetric
+        "Centro": 15,   # symmetric with above
         "Casibarag Sur": 10, "Casibarag Norte": 15, "Luquilu": 20
     },
     "Casibarag Sur": {
@@ -187,6 +187,7 @@ def passenger_login():
         passenger = db.execute("SELECT * FROM passengers WHERE email = ? AND password = ?", (email, password)).fetchone()
         db.close()
         if passenger:
+            session.permanent = True          # <--- KEEP LOGGED IN
             session['passenger'] = {
                 'phone': passenger['phone'],
                 'name': passenger['name'],
@@ -370,6 +371,7 @@ def driver_login():
         driver = db.execute("SELECT * FROM drivers WHERE email = ? AND password = ?", (email, password)).fetchone()
         db.close()
         if driver:
+            session.permanent = True          # <--- KEEP LOGGED IN
             session['driver'] = {'email': driver['email'], 'name': driver['name']}
             db = get_db()
             db.execute("UPDATE drivers SET status = 'available' WHERE email = ?", (email,))
