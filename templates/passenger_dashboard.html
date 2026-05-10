@@ -33,6 +33,19 @@
         </div>
     </div>
 
+    <!-- Passenger Notifications -->
+{% if passenger_notifications %}
+<div style="background: #fff3e0; border-left: 5px solid orange; padding: 15px; margin-bottom: 20px; border-radius: 10px;">
+    <h4 style="color: orange; margin: 0 0 10px 0;">📢 Notifications</h4>
+    {% for notif in passenger_notifications %}
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span>{{ notif.message }} <small>({{ notif.created_at }})</small></span>
+        <a href="{{ url_for('views.mark_notification_read', notif_id=notif.id) }}" style="font-size: 12px; color: orange;">Dismiss</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
     <h3>📋 My Recent Bookings</h3>
     {% if bookings %}
     <div style="overflow-x: auto;">
