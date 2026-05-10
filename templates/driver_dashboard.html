@@ -1,38 +1,69 @@
-<!-- ACCEPTED RIDES - currently being driven -->
-<h3>✅ My Accepted Rides</h3>
-{% if my_accepted %}
-<div style="overflow-x: auto;">
-    <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-            <tr style="background: purple; color: white;">
-                <th style="padding: 10px;">ID</th>
-                <th style="padding: 10px;">Passenger</th>
-                <th style="padding: 10px;">Pickup</th>
-                <th style="padding: 10px;">Dropoff</th>
-                <th style="padding: 10px;">💰 Fare</th>
-                <th style="padding: 10px;">Complete</th>
-                <th style="padding: 10px;">Notify Arrival</th>
-             </tr>
-        </thead>
-        <tbody>
-            {% for b in my_accepted %}
-            <tr style="border-bottom: 1px solid #ddd;">
-                <td style="padding: 10px;">#{{ b.id }}</td>
-                <td style="padding: 10px;">{{ b.passenger_name }}</td>
-                <td style="padding: 10px;">{{ b.pickup[:25] }}...</td>
-                <td style="padding: 10px;">{{ b.dropoff[:25] }}...</td>
-                <td style="padding: 10px; color: green; font-weight: bold;">₱{{ b.fare }}</td>
-                <td style="padding: 10px;">
-                    <a href="{{ url_for('views.complete_ride', booking_id=b.id) }}" class="btn" style="background: blue;">Complete</a>
-                </td>
-                <td style="padding: 10px;">
-                    <a href="{{ url_for('views.notify_arrival', booking_id=b.id) }}" class="btn" style="background: orange;">📢 Arrived</a>
-                </td>
-             </tr>
-            {% endfor %}
-        </tbody>
-     </table>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between;">
+        <h2>Welcome, {{ driver.name }}! 🚗</h2>
+        <div>
+            <a href="{{ url_for('views.toggle_driver_status') }}" class="btn" style="background: {% if driver_info.status == 'available' %}orange{% else %}green{% endif %}">
+                {% if driver_info.status == 'available' %}🔴 Go Offline{% else %}🟢 Go Online{% endif %}
+            </a>
+            <a href="{{ url_for('views.driver_logout') }}" class="btn" style="background: red;">Logout</a>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+        <div style="background: linear-gradient(135deg, #ff69b4, #ff9bcb); padding: 15px; border-radius: 15px; text-align: center; color: white;">
+            <div style="font-size: 30px;">👥</div>
+            <div><strong>{{ active_riders_count }}</strong> Passengers Online</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #4caf50, #81c784); padding: 15px; border-radius: 15px; text-align: center; color: white;">
+            <div style="font-size: 30px;">🚗</div>
+            <div><strong>{{ online_drivers_count }}</strong> Drivers Online</div>
+        </div>
+        <div style="background: linear-gradient(135deg, #ff9800, #ffb74d); padding: 15px; border-radius: 15px; text-align: center; color: white;">
+            <div style="font-size: 30px;">💰</div>
+            <div><strong>₱{{ driver_info.earnings|default(0) }}</strong> Total Earnings</div>
+        </div>
+    </div>
+
+    <h3>📢 Pending Bookings</h3>
+    {% if pending_bookings %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead><tr style="background: purple; color: white;"><th>ID</th><th>Passenger</th><th>Pickup</th><th>Dropoff</th><th>👥</th><th>💰 Fare</th><th></th></tr></thead>
+            <tbody>{% for b in pending_bookings %}
+                <tr><td>#{{ b.id }}</td><td>{{ b.passenger_name }}</td><td>{{ b.pickup[:25] }}...</td><td>{{ b.dropoff[:25] }}...</td><td>{{ b.passengers }}</td><td>₱{{ b.fare }}</td>
+                <td><a href="{{ url_for('views.accept_booking', booking_id=b.id) }}" class="btn" style="background: green;">Accept</a></td></tr>
+            {% endfor %}</tbody>
+        </table>
+    </div>
+    {% else %}<p>No pending bookings. 🚗💨</p>{% endif %}
+
+    <h3>✅ My Accepted Rides</h3>
+    {% if my_accepted %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead><tr style="background: purple; color: white;"><th>ID</th><th>Passenger</th><th>Pickup</th><th>Dropoff</th><th>💰 Fare</th><th>Complete</th><th>Notify Arrival</th></tr></thead>
+            <tbody>{% for b in my_accepted %}
+                <tr><td>#{{ b.id }}</td><td>{{ b.passenger_name }}</td><td>{{ b.pickup[:25] }}...</td><td>{{ b.dropoff[:25] }}...</td><td>₱{{ b.fare }}</td>
+                <td><a href="{{ url_for('views.complete_ride', booking_id=b.id) }}" class="btn" style="background: blue;">Complete</a></td>
+                <td><a href="{{ url_for('views.notify_arrival', booking_id=b.id) }}" class="btn" style="background: orange;">📢 Arrived</a></td></tr>
+            {% endfor %}</tbody>
+        </table>
+    </div>
+    {% else %}<p>No accepted rides.</p>{% endif %}
+
+    <h3>📜 Completed Rides</h3>
+    {% if my_completed %}
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead><tr style="background: purple; color: white;"><th>ID</th><th>Passenger</th><th>Pickup</th><th>Dropoff</th><th>💰 Fare</th></tr></thead>
+            <tbody>{% for b in my_completed %}
+                <tr><td>#{{ b.id }}</td><td>{{ b.passenger_name }}</td><td>{{ b.pickup[:25] }}...</td><td>{{ b.dropoff[:25] }}...</td><td>₱{{ b.fare }}</td></tr>
+            {% endfor %}</tbody>
+        </table>
+    </div>
+    {% else %}<p>No completed rides yet.</p>{% endif %}
 </div>
-{% else %}
-<p>No accepted rides.</p>
-{% endif %}
+{% endblock %}
