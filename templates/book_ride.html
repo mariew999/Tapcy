@@ -10,7 +10,6 @@
         </div>
 
         <form method="POST" action="{{ url_for('views.book_ride') }}" onsubmit="return prepareSubmit()">
-            <!-- PICKUP LOCATION -->
             <div class="form-group">
                 <label class="form-label">📍 Pick-up Barangay</label>
                 <select name="pickup_barangay" id="pickup_barangay" class="form-select" required>
@@ -30,15 +29,11 @@
                     <option value="Luquilu">Luquilu</option>
                 </select>
             </div>
-
             <div class="form-group">
-                <label class="form-label">📍 Pickup Specifics </label>
-                <input type="text" name="pickup_details" id="pickup_details" class="form-input" 
-                       placeholder="e.g., Purok 6, near church, beside school">
-                <small class="input-hint">Adding details helps the driver find you faster.</small>
+                <label class="form-label">📍 Pickup Specifics</label>
+                <input type="text" name="pickup_details" id="pickup_details" class="form-input" placeholder="e.g., Purok 6, near church">
+                <small class="input-hint">Helps driver find you faster.</small>
             </div>
-
-            <!-- DROPOFF LOCATION -->
             <div class="form-group">
                 <label class="form-label">🏁 Drop-off Barangay</label>
                 <select name="dropoff_barangay" id="dropoff_barangay" class="form-select" required>
@@ -58,14 +53,11 @@
                     <option value="Luquilu">Luquilu</option>
                 </select>
             </div>
-
             <div class="form-group">
-                <label class="form-label">🏁 Drop-off Specifics </label>
-                <input type="text" name="dropoff_details" id="dropoff_details" class="form-input" 
-                       placeholder="e.g., Purok 3, near plaza, house number">
-                <small class="input-hint">Adding details helps the driver know exactly where to drop you.</small>
+                <label class="form-label">🏁 Drop-off Specifics</label>
+                <input type="text" name="dropoff_details" id="dropoff_details" class="form-input" placeholder="e.g., Purok 3, near plaza">
+                <small class="input-hint">Helps driver know exactly where to drop you.</small>
             </div>
-
             <div class="form-group">
                 <label class="form-label">👥 Number of Passengers</label>
                 <select name="passengers" id="passengers" class="form-select" onchange="updateFare()" required>
@@ -75,19 +67,14 @@
                     <option value="4">4 Passengers</option>
                 </select>
             </div>
-
             <div class="fare-card">
                 <div class="fare-label">💰 Total Fare</div>
                 <div class="fare-amount">₱<span id="fare_amount">40</span></div>
-                <div class="fare-note">Fare depends on distance and number of passengers</div>
+                <div class="fare-note">Distance‑based fare × passengers</div>
             </div>
-
             <button type="submit" class="submit-btn">✅ Confirm Booking</button>
         </form>
-
-        <div class="back-link">
-            <a href="{{ url_for('views.passenger_dashboard') }}">← Back to Dashboard</a>
-        </div>
+        <div class="back-link"><a href="{{ url_for('views.passenger_dashboard') }}">← Back to Dashboard</a></div>
     </div>
 </div>
 
@@ -116,55 +103,38 @@
 <script>
     const fareMatrix = {{ fare_matrix_json|safe }};
     const defaultFare = {{ default_fare }};
-
     function getFare(pickup, dropoff) {
-        if (fareMatrix[pickup] && fareMatrix[pickup][dropoff]) {
-            return fareMatrix[pickup][dropoff];
-        }
-        if (fareMatrix[dropoff] && fareMatrix[dropoff][pickup]) {
-            return fareMatrix[dropoff][pickup];
-        }
+        if (fareMatrix[pickup] && fareMatrix[pickup][dropoff]) return fareMatrix[pickup][dropoff];
+        if (fareMatrix[dropoff] && fareMatrix[dropoff][pickup]) return fareMatrix[dropoff][pickup];
         return defaultFare;
     }
-
     function updateFare() {
         let pickup = document.getElementById('pickup_barangay').value;
         let dropoff = document.getElementById('dropoff_barangay').value;
         let passengers = parseInt(document.getElementById('passengers').value) || 1;
-        
-        let fare = getFare(pickup, dropoff);
-        let total = fare * passengers;
-        document.getElementById('fare_amount').innerText = total;
+        let fare = getFare(pickup, dropoff) * passengers;
+        document.getElementById('fare_amount').innerText = fare;
     }
-
     document.getElementById('pickup_barangay').addEventListener('change', updateFare);
     document.getElementById('dropoff_barangay').addEventListener('change', updateFare);
     document.getElementById('passengers').addEventListener('change', updateFare);
     window.addEventListener('load', updateFare);
-
     function prepareSubmit() {
-        let pickupBarangay = document.getElementById('pickup_barangay').value;
+        let pickup = document.getElementById('pickup_barangay').value;
         let pickupDetails = document.getElementById('pickup_details').value;
-        let dropoffBarangay = document.getElementById('dropoff_barangay').value;
+        let dropoff = document.getElementById('dropoff_barangay').value;
         let dropoffDetails = document.getElementById('dropoff_details').value;
         let passengers = document.getElementById('passengers').value;
-        
-        let fare = getFare(pickupBarangay, dropoffBarangay);
-        let totalFare = fare * parseInt(passengers);
-        
-        let fullPickup = pickupBarangay;
-        if (pickupDetails.trim()) fullPickup += " - " + pickupDetails;
-        let fullDropoff = dropoffBarangay;
-        if (dropoffDetails.trim()) fullDropoff += " - " + dropoffDetails;
-        
+        let fare = getFare(pickup, dropoff) * parseInt(passengers);
+        let fullPickup = pickup + (pickupDetails.trim() ? " - " + pickupDetails : "");
+        let fullDropoff = dropoff + (dropoffDetails.trim() ? " - " + dropoffDetails : "");
         let form = document.forms[0];
         let hPickup = document.createElement('input'); hPickup.type='hidden'; hPickup.name='pickup'; hPickup.value=fullPickup;
         let hDropoff = document.createElement('input'); hDropoff.type='hidden'; hDropoff.name='dropoff'; hDropoff.value=fullDropoff;
         let hPass = document.createElement('input'); hPass.type='hidden'; hPass.name='passengers'; hPass.value=passengers;
-        let hFare = document.createElement('input'); hFare.type='hidden'; hFare.name='fare'; hFare.value=totalFare;
-        let hPickupBar = document.createElement('input'); hPickupBar.type='hidden'; hPickupBar.name='pickup_barangay'; hPickupBar.value=pickupBarangay;
-        let hDropoffBar = document.createElement('input'); hDropoffBar.type='hidden'; hDropoffBar.name='dropoff_barangay'; hDropoffBar.value=dropoffBarangay;
-        
+        let hFare = document.createElement('input'); hFare.type='hidden'; hFare.name='fare'; hFare.value=fare;
+        let hPickupBar = document.createElement('input'); hPickupBar.type='hidden'; hPickupBar.name='pickup_barangay'; hPickupBar.value=pickup;
+        let hDropoffBar = document.createElement('input'); hDropoffBar.type='hidden'; hDropoffBar.name='dropoff_barangay'; hDropoffBar.value=dropoff;
         form.appendChild(hPickup); form.appendChild(hDropoff); form.appendChild(hPass);
         form.appendChild(hFare); form.appendChild(hPickupBar); form.appendChild(hDropoffBar);
         return true;
