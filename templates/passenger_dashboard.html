@@ -14,17 +14,13 @@
         </div>
     </div>
 
-    <!-- TWO STATS CARDS -->
     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0;">
-        <!-- CARD 1: Available Drivers -->
         <div style="background: linear-gradient(135deg, #4caf50, #81c784); padding: 20px; border-radius: 15px; text-align: center; color: white;">
             <div style="font-size: 40px;">🚗</div>
             <div style="font-size: 28px; font-weight: bold; margin: 10px 0;">{{ available_drivers_count }}</div>
             <div style="font-size: 14px;">Drivers Available Now</div>
             <small style="font-size: 11px; opacity: 0.8;">Ready to pick you up</small>
         </div>
-
-        <!-- CARD 2: Total Rides -->
         <div style="background: linear-gradient(135deg, #ff9800, #ffb74d); padding: 20px; border-radius: 15px; text-align: center; color: white;">
             <div style="font-size: 40px;">📋</div>
             <div style="font-size: 28px; font-weight: bold; margin: 10px 0;">{{ passenger.total_bookings }}</div>
@@ -33,18 +29,17 @@
         </div>
     </div>
 
-    <!-- Passenger Notifications -->
-{% if passenger_notifications %}
-<div style="background: #fff3e0; border-left: 5px solid orange; padding: 15px; margin-bottom: 20px; border-radius: 10px;">
-    <h4 style="color: orange; margin: 0 0 10px 0;">📢 Notifications</h4>
-    {% for notif in passenger_notifications %}
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <span>{{ notif.message }} <small>({{ notif.created_at }})</small></span>
-        <a href="{{ url_for('views.mark_notification_read', notif_id=notif.id) }}" style="font-size: 12px; color: orange;">Dismiss</a>
+    {% if passenger_notifications %}
+    <div style="background: #fff3e0; border-left: 5px solid orange; padding: 15px; margin-bottom: 20px; border-radius: 10px;">
+        <h4 style="color: orange; margin: 0 0 10px 0;">📢 Notifications</h4>
+        {% for notif in passenger_notifications %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span>{{ notif.message }} <small>({{ notif.created_at }})</small></span>
+            <a href="{{ url_for('views.mark_notification_read', notif_id=notif.id) }}" style="font-size: 12px; color: orange;">Dismiss</a>
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
-</div>
-{% endif %}
+    {% endif %}
 
     <h3>📋 My Recent Bookings</h3>
     {% if bookings %}
@@ -70,9 +65,7 @@
                     <td style="padding: 10px;">{{ b.dropoff[:25] }}...</td>
                     <td style="padding: 10px;">{{ b.passengers }}</td>
                     <td style="padding: 10px; color: #ff69b4; font-weight: bold;">₱{{ b.fare }}</td>
-                    <td style="padding: 10px;">
-                        <span class="status-{{ b.status }}">{{ b.status|upper }}</span>
-                    </td>
+                    <td style="padding: 10px;"><span class="status-{{ b.status }}">{{ b.status|upper }}</span></td>
                     <td style="padding: 10px;">{{ b.driver or '🌸 Waiting...' }}</td>
                     <td style="padding: 10px;">
                         {% if b.status == 'pending' %}
