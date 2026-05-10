@@ -81,6 +81,18 @@ def init_db():
         )
     ''')
     
+    # NEW TABLE: passenger notifications (driver arrival)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS passenger_notifications (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            passenger_phone TEXT NOT NULL,
+            booking_id INTEGER NOT NULL,
+            message TEXT NOT NULL,
+            is_read INTEGER DEFAULT 0,
+            created_at TEXT NOT NULL
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -88,6 +100,19 @@ init_db()
 
 active_riders = {}
 active_drivers = {}
+
+# ============= DISTANCE-BASED FARE MATRIX =============
+# Key: (pickup_barangay, dropoff_barangay) -> base fare in PHP
+distance_fares = {
+    ("Garita", "Balasig"): 20,
+    ("Balasig", "Cubag"): 40,
+    ("Catabayungan", "Centro"): 30,
+    ("Centro", "Catabayungan"): 30,
+    ("Cubag", "Garita"): 35,
+    ("Angancasilian", "Ngarag"): 25,
+    # Add more pairs as needed
+}
+DEFAULT_FARE = 50
 
 # ============= HOME PAGE =============
 @views.route("/")
@@ -192,17 +217,24 @@ def passenger_dashboard():
 
     db = get_db()
     
-    # Get passenger details including total_bookings
+    # Get passenger details
     passenger_data = db.execute("SELECT * FROM passengers WHERE phone = ?", 
                                 (session['passenger']['phone'],)).fetchone()
     
-    # COUNT completed bookings directly from bookings table
+    # Count completed bookings
     completed_count = db.execute("SELECT COUNT(*) as count FROM bookings WHERE passenger_phone = ? AND status = 'completed'",
                                  (session['passenger']['phone'],)).fetchone()
     
     bookings = db.execute("SELECT * FROM bookings WHERE passenger_phone = ? ORDER BY id DESC", 
                          (session['passenger']['phone'],)).fetchall()
     available_drivers = db.execute("SELECT * FROM drivers WHERE status = 'available'").fetchall()
+    
+    # Fetch unread passenger notifications
+    passenger_notifications = db.execute(
+        "SELECT * FROM passenger_notifications WHERE passenger_phone = ? AND is_read = 0 ORDER BY id DESC",
+        (session['passenger']['phone'],)
+    ).fetchall()
+    
     db.close()
 
     active_riders_list = []
@@ -213,7 +245,6 @@ def passenger_dashboard():
             'login_time': rider['login_time']
         })
 
-    # Use completed_count instead of total_bookings from passengers table
     passenger_info = {
         'name': session['passenger']['name'],
         'phone': session['passenger']['phone'],
@@ -227,7 +258,8 @@ def passenger_dashboard():
                            bookings=bookings,
                            active_riders=active_riders_list,
                            active_riders_count=len(active_riders),
-                           available_drivers_count=len(available_drivers))
+                           available_drivers_count=len(available_drivers),
+                           passenger_notifications=passenger_notifications)
 
 @views.route("/book_ride", methods=["GET", "POST"])
 def book_ride():
@@ -236,29 +268,39 @@ def book_ride():
         return redirect(url_for('views.passenger_login'))
 
     if request.method == "POST":
-        pickup = request.form.get("pickup")
-        dropoff = request.form.get("dropoff")
+        pickup_barangay = request.form.get("pickup_barangay")
+        dropoff_barangay = request.form.get("dropoff_barangay")
+        pickup_details = request.form.get("pickup_details", "")
+        dropoff_details = request.form.get("dropoff_details", "")
         passengers_count = int(request.form.get("passengers"))
-        fare = passengers_count * 40
-
-        db = get_db()
         
+        # Combine full pickup/dropoff strings
+        full_pickup = pickup_barangay
+        if pickup_details.strip():
+            full_pickup = f"{pickup_barangay} - {pickup_details}"
+        full_dropoff = dropoff_barangay
+        if dropoff_details.strip():
+            full_dropoff = f"{dropoff_barangay} - {dropoff_details}"
+        
+        # Get base fare from distance matrix
+        pair = (pickup_barangay, dropoff_barangay)
+        base_fare = distance_fares.get(pair, DEFAULT_FARE)
+        fare = base_fare * passengers_count   # per passenger (or remove multiplication if total)
+        
+        db = get_db()
         cursor = db.execute('''INSERT INTO bookings (passenger_phone, passenger_name, pickup, dropoff, passengers, fare, status, time, date)
                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                           (session['passenger']['phone'], session['passenger']['name'], pickup, dropoff, 
+                           (session['passenger']['phone'], session['passenger']['name'], full_pickup, full_dropoff, 
                             passengers_count, fare, 'pending', get_local_time().strftime("%H:%M"), 
                             get_local_time().strftime("%Y-%m-%d")))
         booking_id = cursor.lastrowid
         
-        # Don't increment total_bookings here - count completed rides instead
-        
         available_drivers = db.execute("SELECT * FROM drivers WHERE status = 'available'").fetchall()
-        
         for driver in available_drivers:
             db.execute('''INSERT INTO notifications (driver_email, booking_id, message, pickup, fare, time)
                           VALUES (?, ?, ?, ?, ?, ?)''',
                       (driver['email'], booking_id, f"New booking from {session['passenger']['name']}", 
-                       pickup, fare, get_local_time().strftime("%H:%M")))
+                       full_pickup, fare, get_local_time().strftime("%H:%M")))
         
         db.commit()
         db.close()
@@ -266,7 +308,13 @@ def book_ride():
         flash(f"🎀 Booking #{booking_id} created! Fare: ₱{fare}. {len(available_drivers)} driver(s) notified.", "success")
         return redirect(url_for('views.passenger_dashboard'))
 
-    return render_template("book_ride.html", passenger=session['passenger'], active_tab='passenger')
+    # For GET request, pass fare matrix to template as JSON
+    from json import dumps
+    return render_template("book_ride.html", 
+                           passenger=session['passenger'], 
+                           active_tab='passenger',
+                           fare_matrix_json=dumps(distance_fares),
+                           default_fare=DEFAULT_FARE)
 
 @views.route("/cancel_booking/<int:booking_id>")
 def cancel_booking(booking_id):
@@ -307,7 +355,6 @@ def driver_login():
         if driver:
             session['driver'] = {'email': driver['email'], 'name': driver['name']}
             
-            # Auto-set driver to available/online when they login
             db = get_db()
             db.execute("UPDATE drivers SET status = 'available' WHERE email = ?", (email,))
             db.commit()
@@ -342,7 +389,6 @@ def driver_register():
         flash("Phone number must be exactly 11 digits", "error")
         return redirect(url_for('views.driver_login', tab='register'))
 
-    # Email validation
     if '@' not in email or '.' not in email:
         flash(f"Please enter a valid email address (e.g., name@example.com). You entered: '{email}'", "error")
         return redirect(url_for('views.driver_login', tab='register'))
@@ -410,9 +456,7 @@ def accept_booking(booking_id):
 
     db = get_db()
     
-    # Check if driver is online
     driver = db.execute("SELECT status FROM drivers WHERE email = ?", (session['driver']['email'],)).fetchone()
-    
     if driver is None:
         db.close()
         flash("Driver account not found", "error")
@@ -423,7 +467,6 @@ def accept_booking(booking_id):
         flash("🔴 You are OFFLINE. Please go online first to accept bookings.", "error")
         return redirect(url_for('views.driver_dashboard'))
     
-    # Check if booking is still pending
     booking = db.execute("SELECT status FROM bookings WHERE id = ?", (booking_id,)).fetchone()
     if booking and booking['status'] != 'pending':
         db.close()
@@ -492,6 +535,40 @@ def toggle_driver_status():
     
     db.close()
     return redirect(url_for('views.driver_dashboard'))
+
+# NEW ROUTE: Notify passenger that driver has arrived
+@views.route("/notify_arrival/<int:booking_id>")
+def notify_arrival(booking_id):
+    if 'driver' not in session:
+        flash("Please login first", "error")
+        return redirect(url_for('views.driver_login'))
+    
+    db = get_db()
+    booking = db.execute("SELECT passenger_phone FROM bookings WHERE id = ?", (booking_id,)).fetchone()
+    if booking:
+        db.execute('''INSERT INTO passenger_notifications (passenger_phone, booking_id, message, created_at)
+                      VALUES (?, ?, ?, ?)''',
+                   (booking['passenger_phone'], booking_id,
+                    f"🚕 Your driver {session['driver']['name']} has arrived! Please come out.",
+                    get_local_time().strftime("%Y-%m-%d %H:%M")))
+        db.commit()
+        flash("✅ Arrival notification sent to passenger.", "success")
+    else:
+        flash("Booking not found.", "error")
+    db.close()
+    return redirect(url_for('views.driver_dashboard'))
+
+@views.route("/mark_notification_read/<int:notif_id>")
+def mark_notification_read(notif_id):
+    if 'passenger' not in session:
+        return redirect(url_for('views.passenger_login'))
+    
+    db = get_db()
+    db.execute("UPDATE passenger_notifications SET is_read = 1 WHERE id = ? AND passenger_phone = ?",
+              (notif_id, session['passenger']['phone']))
+    db.commit()
+    db.close()
+    return redirect(url_for('views.passenger_dashboard'))
 
 @views.route("/driver_logout")
 def driver_logout():
